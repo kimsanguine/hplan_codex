@@ -40,51 +40,71 @@ hplan → discover → architect → deliver → operate
 
 ---
 
+## Prerequisite: Install Codex CLI
+
+hplan_codex runs inside the OpenAI Codex CLI. **Install it first:**
+
+```bash
+npm install -g @openai/codex
+```
+
+Official docs and other install options: https://developers.openai.com/codex
+
+---
+
+## Install hplan_codex
+
+**Recommended — from inside a Codex session:**
+
+```
+$skill-installer https://github.com/kimsanguine/hplan_codex
+```
+
+This pulls the 28 skills into your Codex CLI skills directory.
+
+**Manual alternative** (clone + harness setup):
+
+```bash
+git clone https://github.com/kimsanguine/hplan_codex.git
+cp -r hplan_codex/harness/ ./harness/
+cp hplan_codex/AGENTS.md ./AGENTS.md
+# optional: copy the config example to your global Codex config
+cp hplan_codex/config.toml.example ~/.codex/config.toml   # then edit
+```
+
+---
+
 ## Quick Start
 
-**5-minute start** (after cloning):
+After installing (above), from your project folder:
+
 ```
 $brainstorm "your idea here"
 ```
 
-**Full setup** (for complete workflow):
+→ a "should we build this" judgment in ~5 minutes.
 
-**0. Get hplan_codex**
-```bash
-git clone https://github.com/kimsanguine/hplan_codex.git
-cd your-project
+**Full workflow:**
+
 ```
-
-1. Copy harness templates to your project:
-   ```bash
-   cp -r ../hplan_codex/harness/ ./harness/
-   cp -r ../hplan_codex/.codex/ ./.codex/
-   cp ../hplan_codex/AGENTS.md ./AGENTS.md
-   ```
-2. Run Codex CLI in your project folder
-3. Start:
-   ```
-   $brainstorm "your idea"
-   ```
+$brainstorm → $socratic-question → $opp-tree → $prd → $conductor
+```
 
 ---
 
 ## Security & Sandbox
 
-hplan_codex runs in Codex CLI's **workspace-write** sandbox by default.
+hplan_codex runs inside Codex CLI's sandbox. Codex 0.130.0 supports three sandbox modes:
 
 | Mode | Access |
 |---|---|
-| `workspace-read` | Read project files only (spec-reviewer, quality-reviewer) |
-| `workspace-write` | Read + write project files + run bash (implementer, default) |
+| `read-only` | Read project files only — no writes, no network |
+| `workspace-write` | Read + write project files + run commands in the workspace (default) |
+| `danger-full-access` | Full read/write + network — use only when you trust the task |
 
-**Hooks**: Three automatic hooks run in the background:
-- `SessionStart`: Checks for `harness/` directory
-- `PostToolUse`: Logs file writes to `.track/actual_log.jsonl`
-- `Stop`: Validates skill files
+Set the sandbox mode in your Codex CLI session or config. hplan_codex skills assume `workspace-write` for the build phases.
 
-**To disable hooks**: Delete or empty `.codex/hooks.json`
-**To use read-only mode**: Set `default_sandbox_mode = "workspace-read"` in `.codex/config.toml`
+> Codex CLI 0.130.0 does not support file-based hooks. `scripts/track-probe.sh` is provided as a manual sprint-tracking probe you can run yourself or wire into a Codex automation.
 
 ---
 
