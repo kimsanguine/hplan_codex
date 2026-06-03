@@ -1,9 +1,9 @@
 ---
 name: sprint
 description: "스프린트 계획-실행-추적 통합 — 딜리버리 플랜 작성(delivery-plan)과 진척 추적(track) 통합. PRD → WBS 분해, predicted.json 초기화, probe/detect/report/checkpoint 실행. Use when planning or tracking a delivery sprint."
-argument-hint: "[brief] [--step plan|init|status|retro|codebase-status]"
-tools: ["Read", "Write", "Bash"]
-model: default
+metadata:
+  short-description: "PRD→WBS 계획 + 진척 추적을 단일 인터페이스로 통합"
+  plugin: deliver
 ---
 
 ## Core Goal
@@ -13,7 +13,7 @@ model: default
 | step | 책임 | LLM | 출력 |
 |---|---|---|---|
 | `--step plan` | PRD → WBS 분해, complexity 1-5 분류, velocity lookup → `.track/predicted.json` | ✅ WBS/분류만, 수치 예측 ❌ | predicted.json |
-| `--step init` | `.track/` 생성, probe hook 등록, 추적 초기화 | ❌ 결정론 | `.track/actual_log.jsonl` + hook |
+| `--step init` | `.track/` 생성, 추적 초기화 | ❌ 결정론 | `.track/actual_log.jsonl` + probe 스크립트 |
 | `--step status` | jsonl 블로커 패턴 결정론 스캔 + 이벤트 트리거 현황 보고 | ✅ 자연어 렌더링만 | 진행 보고 |
 | `--step retro` | 완료 후 실측 vs 예측 deviation 분석 + TK 추출 | ✅ 분류/자연어 | retro report |
 | `--step codebase-status` | 코드베이스 능동 탐색 → PM 현황 보고 | ✅ 산문 합성만 | codebase-report.md |
@@ -47,10 +47,10 @@ model: default
 - "지금 코드 어디까지 됐어?" / "probe 없는 환경에서 현황 보고" → `--step codebase-status`
 
 ### Route to Other Skills When
-- 비용 시뮬레이션 (lognormal) → `discover/cost-sim`
-- WBS 30 task 초과 → `deliver/conductor`로 태스크 순차 실행
-- UI 디자인 확인 → `deliver/ui-validate`
-- 주간 운영 회고 → `operate/weekly-rollup`
+- 비용 시뮬레이션 (lognormal) → `$cost-sim`
+- WBS 30 task 초과 → `$conductor`로 태스크 순차 실행
+- UI 디자인 확인 → `$ui-validate`
+- 주간 운영 회고 → `$weekly-rollup`
 
 ### Boundary Checks
 - PRD vague (Section 6 누락) → fail loud, PRD 보강 요청
@@ -63,22 +63,22 @@ model: default
 
 | 입력 | 출처 | 처리 |
 |---|---|---|
-| `--step` | `$ARGUMENTS` | plan/init/status/retro/codebase-status 분기 |
-| target | `$ARGUMENTS` (step 이후 나머지) | PRD 경로 또는 feature 설명 |
+| `--step` | 호출 인자 | plan/init/status/retro/codebase-status 분기 |
+| target | 호출 인자 (step 이후 나머지) | PRD 경로 또는 feature 설명 |
 | `profiles/<op>/velocity/baseline.jsonl` | velocity-baseline 또는 plan step | estimate lookup 기준 |
 | `.track/predicted.json` | plan step 출력 | status/retro 비교 기준 |
-| `.track/actual_log.jsonl` | init + probe hook | status/retro 실측 데이터 |
+| `.track/actual_log.jsonl` | init + probe 스크립트 | status/retro 실측 데이터 |
 
 ---
 
 ## Instructions
 
-You are running sprint skill with arguments: **$ARGUMENTS**
+호출 인자에 따라 `--step plan|init|status|retro|codebase-status`로 분기한다.
 
 ### 공통 Step 0 — step 파싱
 
 ```
-args = parse("$ARGUMENTS")
+args = parse(호출 인자)
 step = args.get("--step", "plan")   # 기본값: plan
 target = args remainder after --step value
 ```
@@ -99,7 +99,7 @@ step 미명시 시:
 **Step 2 — PRD WBS 분해 (LLM 분류)**
 - PRD Section 6 (Now/Next/Later) 또는 feature 설명에서 task 후보 추출
 - 각 task: 1줄 description + 의존성
-- 5~20 task 권장. 30 초과 시 `deliver/conductor` 라우팅 권유
+- 5~20 task 권장. 30 초과 시 `$conductor` 라우팅 권유
 
 **Step 3 — 각 task complexity 분류 (LLM)**
 - 입력: task description
@@ -149,7 +149,7 @@ for task in tasks:
 
 ### step: init
 
-**init의 역할**: `.track/` 디렉토리 생성, append-only jsonl 추적 환경 세팅, probe hook 등록.
+**init의 역할**: `.track/` 디렉토리 생성, append-only jsonl 추적 환경 세팅, probe 스크립트 설치.
 
 **Step 1 — .track/ 디렉토리 + .gitignore 등록**
 - `mkdir -p .track`
@@ -160,22 +160,21 @@ for task in tasks:
 - `chmod +x scripts/track-probe.sh`
 - ⚠ 인라인 작성 금지 — 검증된 배포 스크립트를 그대로 복사한다.
 
-**Step 3 — Hook 등록**
-- `.codex/hooks.json`의 PostToolUse에 추가 (stdin JSON 프로토콜):
-```json
-{"hooks": {"PostToolUse": [{"matcher": "write_file|Edit|NotebookEdit", "hooks": [{"type": "command", "command": "bash scripts/track-probe.sh"}]}]}}
-```
+**Step 3 — 추적 실행 방식 안내**
+- 추적은 파일 편집 후 `python3 scripts/track-probe.sh`를 **수동** 또는 **Codex automation**으로 실행해 수집한다.
 - probe는 stdin으로 JSON을 받는다 (tool_name·tool_input). CLI 인자/env-var 방식 아님.
-- 기존 hooks가 있으면 array append (덮어쓰기 금지)
+- 즉, 코드 변경이 일어난 뒤 해당 이벤트(JSON)를 probe에 파이프로 전달하면 `.track/actual_log.jsonl`에 entry가 append된다.
 
-**Step 4 — Hook smoke test**
+> file-based PostToolUse hook은 Codex CLI 0.130.0에서 미확인이다. 따라서 자동 등록 대신 probe 스크립트를 수동/automation 호출 방식으로 운용한다.
+
+**Step 4 — probe smoke test**
 - `echo '{"tool_name":"write_file","tool_input":{"file_path":"noop","content":"a
 b
-"}}' | bash scripts/track-probe.sh`
+"}}' | python3 scripts/track-probe.sh`
 - `.track/actual_log.jsonl` 마지막 줄에 entry(loc_delta=2) 확인 → pass
 
 **Step 5 — 사용자 안내**
-- Hook이 PostToolUse에 등록됐음
+- probe 스크립트 설치 완료, 호출 방식(수동/automation) 안내
 - silent fail 의심 시 `--step status`로 점검
 
 ---
@@ -286,7 +285,7 @@ TK 추출 후보: N개
 
 ### --step codebase-status
 
-> probe hook이 없거나 외부 PM이 현황을 물을 때 코드베이스를 **능동 탐색**해 현황 보고서를 만든다.
+> probe 데이터가 없거나 외부 PM이 현황을 물을 때 코드베이스를 **능동 탐색**해 현황 보고서를 만든다.
 > 서브에이전트가 git/파일/테스트를 실행하므로 `.track/` 존재 여부에 무관하다.
 
 #### 데이터 수집 (결정론 — LLM 0)
@@ -365,13 +364,13 @@ TK 추출 후보: N개
 ## jsonl 포맷 (append-only 스키마)
 
 ```jsonl
-{"ts":"2026-05-17T10:14:22Z","task":"T-001","event":"start","tokens_in":0,"source":"hook"}
-{"ts":"2026-05-17T10:18:41Z","task":"T-001","event":"tool_call","tool":"str_replace","file":"middleware/jwt.ts","loc_delta":47,"exit_code":0,"source":"hook"}
-{"ts":"2026-05-17T10:22:09Z","task":"T-001","event":"tool_call","tool":"bash","cmd_summary":"npm test","exit_code":1,"source":"hook"}
-{"ts":"2026-05-17T10:41:55Z","task":"T-001","event":"complete","loc_actual":138,"tokens_total":11200,"minutes_elapsed":27,"source":"hook"}
+{"ts":"2026-05-17T10:14:22Z","task":"T-001","event":"start","tokens_in":0,"source":"probe"}
+{"ts":"2026-05-17T10:18:41Z","task":"T-001","event":"tool_call","tool":"str_replace","file":"middleware/jwt.ts","loc_delta":47,"exit_code":0,"source":"probe"}
+{"ts":"2026-05-17T10:22:09Z","task":"T-001","event":"tool_call","tool":"bash","cmd_summary":"npm test","exit_code":1,"source":"probe"}
+{"ts":"2026-05-17T10:41:55Z","task":"T-001","event":"complete","loc_actual":138,"tokens_total":11200,"minutes_elapsed":27,"source":"probe"}
 ```
 
-필수 필드: `ts` (ISO8601 UTC), `event`, `source` (hook/shell)
+필수 필드: `ts` (ISO8601 UTC), `event`, `source` (probe/shell)
 
 ---
 
@@ -386,7 +385,7 @@ TK 추출 후보: N개
 | 의존성 cycle 발견 | DFS | fail loud, cycle 표시 + 끊기 권유 |
 | plan Step 4에서 LLM 호출 감지 | 자체 점검 | **즉시 fail, Rule 5 위반** |
 | jsonl 없음 (status) | file not found | "init 먼저" fail loud |
-| Hook silent fail | status entry 수 0 | `--step init` 재등록 권유 |
+| probe silent fail | status entry 수 0 | `--step init` 재설치 권유 |
 
 ---
 
@@ -437,7 +436,7 @@ TK 추출 후보: N개
 **기대 동작:**
 1. `.track/` mkdir + `.gitignore` append
 2. `scripts/track-probe.sh` 작성 + chmod+x
-3. `.codex/hooks.json` hooks.PostToolUse 항목 append
+3. probe 호출 방식(수동/automation) 안내
 4. smoke test → jsonl 1줄 추가 → 통과
 
 ### Good Example

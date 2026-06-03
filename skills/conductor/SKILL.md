@@ -1,20 +1,20 @@
 ---
 name: conductor
-description: "태스크별 fresh subagent 디스패치 + 2단계 게이트(spec→quality) 반복 실행. harness-plan 승인 후 구현 루프를 돌릴 때 사용. parallel-team이 역할 병렬이라면, conductor는 태스크 순차+게이트다."
-argument-hint: "[plan source: PRD path or delivery brief]"
-tools: ["Read", "Write", "write_file", "Bash"]
-model: default
+description: "태스크별 fresh subagent 디스패치 + 2단계 게이트(spec→quality) 반복 실행. 구현 플랜 승인 후 구현 루프를 돌릴 때 사용. parallel-team이 역할 병렬이라면, conductor는 태스크 순차+게이트다."
+metadata:
+  short-description: "태스크 순차 구현 + Spec/Quality 2단계 게이트 반복 실행"
+  plugin: deliver
 ---
 
-# /deliver:conductor — 태스크 순차 실행 + 2단계 게이트
+# conductor — 태스크 순차 실행 + 2단계 게이트
 
-Running for: **$ARGUMENTS**
+구현 플랜(PRD path 또는 delivery brief)을 입력으로 받아 실행한다.
 
 ---
 
 ## Core Goal
 
-- `harness-plan`이 승인한 PRD 또는 PROGRESS.md를 **태스크별 순차 루프**로 실행한다.
+- 승인된 PRD 또는 PROGRESS.md를 **태스크별 순차 루프**로 실행한다.
 - 각 태스크마다 구현 → Spec Compliance → Quality Gate 순으로 검증한다.
 - 태스크 간 컨텍스트 오염을 막기 위해 subagent를 매 태스크마다 fresh하게 디스패치한다.
 - PRD 섹션 단위 충족 여부를 체크리스트로 추적한다.
@@ -58,6 +58,18 @@ Running for: **$ARGUMENTS**
 
 ---
 
+## 서브에이전트 디스패치 방식
+
+conductor는 각 태스크마다 Codex가 **fresh 서브에이전트를 스폰**해 실행한다. 스폰되는 에이전트는 세 종류다:
+
+- **구현 에이전트**: 현재 태스크 텍스트 + 파일 범위 + 허용 파일을 받아 구현하고 STATUS를 반환한다.
+- **Spec 리뷰어**: 구현 결과와 PRD 섹션을 교차 검증해 ICP 정합성·비기능 요건·실패 모드 커버를 평가한다.
+- **Quality 리뷰어**: 기술 부채 마커·테스트 커버리지·보안 기본을 점검한다.
+
+각 서브에이전트는 직전 태스크 컨텍스트를 상속하지 않는 fresh 세션으로 띄운다 (태스크 간 오염 방지). Spec/Quality 리뷰는 conductor 루프 내부에서 구현 직후 순차로 수행한다 — 별도 명령을 호출하지 않는다.
+
+---
+
 ## 실행 모드
 
 | 모드 | 트리거 | 실행 방식 | 리뷰 | COGS 검토 |
@@ -71,7 +83,7 @@ Running for: **$ARGUMENTS**
 - `depends_on: [TN]` 태스크 → TN 완료 확인 후 순차 실행
 - Spec/Quality 리뷰 루프 생략 (속도 우선)
 - **Step E(COGS 영향 검토)는 마지막에 한 번 유지** — 빠르게 만든 뒤 경제성이 깨지는 것을 방지
-- sprint 모드 완료 시 "⚠️ sprint 모드: 리뷰 루프 생략됨 — 배포 전 /harness-build --step spec-review 권장" 출력
+- sprint 모드 완료 시 "⚠️ sprint 모드: 리뷰 루프 생략됨 — 배포 전 conductor를 quality 모드로 한 번 더 돌려 Spec 리뷰 권장" 출력
 
 ---
 
@@ -80,7 +92,7 @@ Running for: **$ARGUMENTS**
 ```
 [Phase 0] PRD → 구현 플랜 (자동)
   - harness/PRD.md 존재 확인
-    없으면 → fail loud: "harness/PRD.md 없음 — /prd 먼저 실행하거나 $ARGUMENTS에 PRD 경로 명시"
+    없으면 → fail loud: "harness/PRD.md 없음 — $prd 먼저 실행하거나 입력 인자에 PRD 경로 명시"
     있으면 → 계속
   - harness/implementation-plan.md 존재 확인
     있으면 → 기존 플랜 로드 (재생성 없음)
@@ -110,12 +122,12 @@ Running for: **$ARGUMENTS**
           DONE / DONE_WITH_CONCERNS / NEEDS_CONTEXT / BLOCKED
 
     Step B: Spec Compliance Check
-      - harness-build --step spec-review 실행
+      - Spec 리뷰어 서브에이전트 스폰
       - ICP 정합성, 비기능 요건, 실패 모드 커버 3체크포인트
       - 미충족 항목 → 구현 에이전트에게 수정 요청 → 재검토
 
     Step C: Quality Gate
-      - harness-build --step quality-gate 실행
+      - Quality 리뷰어 서브에이전트 스폰
       - 기술 부채 마커, 테스트 커버리지, 보안 기본 점검
       - PASS → 다음 태스크로. FAIL → 수정 후 재실행
 
@@ -134,7 +146,7 @@ Running for: **$ARGUMENTS**
           범위 내 또는 판단 불가 → PASS
 
 [Phase 3] 최종 리뷰
-  - 전체 태스크 완료 후 spec-review 전체 실행
+  - 전체 태스크 완료 후 Spec 리뷰어를 전체 범위(scope all)로 한 번 더 스폰
   - 완료 리포트 출력
 ```
 
@@ -163,8 +175,8 @@ Running for: **$ARGUMENTS**
    - 파일 없으면 즉시 중단:
      ```
      ❌ harness/PRD.md 없음.
-     /prd 스킬로 PRD를 먼저 작성하거나,
-     $ARGUMENTS에 PRD 경로를 명시하세요.
+     $prd 스킬로 PRD를 먼저 작성하거나,
+     입력 인자에 PRD 경로를 명시하세요.
      ```
 2. `harness/implementation-plan.md` 존재 확인
    - 있으면 → 로드 후 Step 1로 이동 (재생성 생략)
@@ -173,13 +185,13 @@ Running for: **$ARGUMENTS**
    - 각 태스크는 `T1`, `T2`, … 번호 + 제목 + 담당 파일 범위 + `depends_on` 필드 포함
    - `depends_on: []` = 독립 태스크 (--mode sprint 병렬 대상)
    - `depends_on: [T1]` = T1 완료 후 실행
-4. `harness/implementation-plan.md` Write (또는 write_file)
+4. `harness/implementation-plan.md` Write
 5. Step 1로 이동 — 이 파일을 플랜 파싱 소스로 사용
 
 ### Step 1 — 플랜 파싱
 
-1. `$ARGUMENTS`에서 PRD 경로 또는 delivery brief 추출
-2. 우선순위: `harness/implementation-plan.md` → `harness/PROGRESS.md` → `$ARGUMENTS` 인라인
+1. 입력 인자에서 PRD 경로 또는 delivery brief 추출
+2. 우선순위: `harness/implementation-plan.md` → `harness/PROGRESS.md` → 입력 인자 인라인
 3. 태스크 목록을 아래 형식으로 변환:
 
 ```
@@ -200,9 +212,9 @@ Running for: **$ARGUMENTS**
 - `harness/implementation-plan.md`의 `depends_on` 필드 파싱
 - 독립 태스크 (depends_on: []) 목록 → 병렬 디스패치 그룹으로 분류
 - 의존 태스크 → 순서 유지 그룹으로 분류
-- 병렬 그룹은 동시에 Codex subagent 디스패치 (worktree isolation 필수)
+- 병렬 그룹은 동시에 Codex 서브에이전트 디스패치 (worktree isolation 필수)
   - 디스패치 전 worktree 생성: `git worktree add .worktrees/<태스크-id> HEAD`
-  - implementer 프롬프트의 `### worktree 경로` 필드에 `.worktrees/<태스크-id>` 명시
+  - 구현 에이전트 프롬프트의 `### worktree 경로` 필드에 `.worktrees/<태스크-id>` 명시
   - 태스크 완료 후 worktree 제거: `git worktree remove .worktrees/<태스크-id>`
   - `.worktrees/` 디렉토리가 `.gitignore`에 없으면 디스패치 전 추가
 
@@ -219,19 +231,20 @@ Running for: **$ARGUMENTS**
 
 ### Step 2 — 구현 에이전트 디스패치
 
-각 태스크마다 Codex subagent 디스패치 **직전**에 해당 태스크 id를 `.track/current_task`에 기록한다 (결정론, LLM 호출 없음):
+각 태스크마다 Codex 서브에이전트 디스패치 **직전**에 해당 태스크 id를 `.track/current_task`에 기록한다 (결정론, LLM 호출 없음):
 ```bash
 echo "T-001" > .track/current_task   # 현재 태스크 id로 치환
 ```
-이 기록이 있어야 probe hook이 이후 write_file/Edit 이벤트를 태스크별로 태깅할 수 있다.
+이 기록이 있어야 추적 probe가 이후 write_file/Edit 이벤트를 태스크별로 태깅할 수 있다.
 `.track/` 디렉토리가 없으면 기록을 건너뛴다 (`[ -d .track ] && echo "T-001" > .track/current_task`).
 
-이후 `.codex/agents/implementer.toml` 파일로 정의된
-fresh Codex subagent를 호출한다. 각 플레이스홀더를 현재 태스크 정보로 채운다.
+이후 fresh Codex 서브에이전트를 **구현 에이전트**로 스폰한다. 현재 태스크 텍스트·파일 범위·허용 파일을 프롬프트에 채워 전달한다.
 
 마찬가지로:
-- Spec Compliance Review: `.codex/agents/spec-reviewer.toml` 파일로 정의된 에이전트 사용
-- Quality Review: `.codex/agents/quality-reviewer.toml` 파일로 정의된 에이전트 사용
+- Spec Compliance Review: **Spec 리뷰어** 서브에이전트를 스폰
+- Quality Review: **Quality 리뷰어** 서브에이전트를 스폰
+
+각 리뷰어는 직전 컨텍스트를 상속하지 않는 fresh 세션으로 띄운다.
 
 ### Step 3 — STATUS 처리
 
@@ -260,24 +273,24 @@ DONE_WITH_CONCERNS 태스크는 완료 리포트에 ⚠️ 태그로 명시된�
 
 #### Step B-0 — 결정론 선행 검사 (LLM 전 실행)
 
-spec-reviewer 호출 전 다음을 순서대로 실행한다:
+Spec 리뷰어 스폰 전 다음을 순서대로 실행한다:
 
 ```bash
 # 1) 미완료 마커 스캔
 TODO_COUNT=$(grep -r "TODO\|FIXME\|HACK\|XXX" . --include="*.js" --include="*.ts" --include="*.py" 2>/dev/null | wc -l)
-# TODO_COUNT > 0 이면 → 개수를 spec-reviewer에 컨텍스트로 전달
+# TODO_COUNT > 0 이면 → 개수를 Spec 리뷰어에 컨텍스트로 전달
 
 # 2) Error handler 존재 확인
 # 에러 처리 구문 감지 — 주석/변수명/타입 정의 제외, 실제 처리 구문만
 ERROR_HANDLER_JS=$(grep -rn "^\s*\(catch\s*(\|\.catch(\|\.on('error'" . \
   --include="*.js" --include="*.ts" 2>/dev/null | grep -v "^\s*//" | wc -l)
-ERROR_HANDLER_PY=$(grep -rn "^\s*except" . \
+ERROR_HANDLER_PY=$(grep -rn "^\s*except" . \
   --include="*.py" 2>/dev/null | wc -l)
 ERROR_HANDLER=$((ERROR_HANDLER_JS + ERROR_HANDLER_PY))
 # ERROR_HANDLER == 0 이면 → "에러 처리 구문 미발견" 플래그
 
 > 이 검사는 false negative 가능성이 있습니다(Rust Result<T,E>, Go error return 등 미감지).
-> ERROR_HANDLER > 0이어도 실제 에러 처리가 충분한지는 spec-reviewer가 자연어로 평가합니다.
+> ERROR_HANDLER > 0이어도 실제 에러 처리가 충분한지는 Spec 리뷰어가 자연어로 평가합니다.
 > 이 수치는 "완전 없음"을 감지하는 1차 필터입니다.
 
 # 3) 테스트 파일 존재 확인
@@ -285,7 +298,7 @@ TEST_FILES=$(find . -name "*.test.*" -o -name "test_*.py" 2>/dev/null | wc -l)
 # TEST_FILES == 0 이면 → Quality Gate 테스트 커버리지 항목 자동 FAIL
 ```
 
-결정론 검사 결과를 spec-reviewer 프롬프트에 포함한다. LLM은 이 수치를 해석하고 자연어로 설명하는 역할만 한다.
+결정론 검사 결과를 Spec 리뷰어 프롬프트에 포함한다. LLM은 이 수치를 해석하고 자연어로 설명하는 역할만 한다.
 
 **전처리: PRD 섹션 로드**
 1. `harness/PRD.md` Read (Step 0에서 이미 로드됐으므로 캐시 활용)
@@ -326,7 +339,7 @@ TEST_FILES=$(find . -name "*.test.*" -o -name "test_*.py" 2>/dev/null | wc -l)
 ```
 
 **PASS** → Step 6으로 진행  
-**FAIL** → 해당 항목 수정 요청 → quality-gate 재실행 (1회 한도)
+**FAIL** → 해당 항목 수정 요청 → Quality 리뷰어 재스폰 (1회 한도)
 
 ### Step 6 — 태스크 완료 표시
 
@@ -359,11 +372,9 @@ cat harness/build-gate/cogs_result.json 2>/dev/null || echo "COGS_SKIP"
 
 전체 태스크 완료 후:
 
+- 전체 범위(scope all)로 Spec 리뷰어를 한 번 더 스폰해 통합 정합성을 확인한다.
+- 완료 리포트 출력:
 ```bash
-# 전체 spec-review
-harness-build --step spec-review --scope all
-
-# 완료 리포트
 cat harness/PROGRESS.md
 ```
 
@@ -378,7 +389,7 @@ cat harness/PROGRESS.md
 
 | 실패 상황 | 감지 | 대응 |
 |---|---|---|
-| 플랜 파싱 실패 | PRD/PROGRESS.md 없음 | `$ARGUMENTS` 인라인 파싱 시도 → 없으면 중단 |
+| 플랜 파싱 실패 | PRD/PROGRESS.md 없음 | 입력 인자 인라인 파싱 시도 → 없으면 중단 |
 | STATUS: BLOCKED 반환 | 에이전트 응답 | 블로커 원인 분석 → 분해 or 에스컬레이션 |
 | Spec Compliance 재검토 실패 | 1회 수정 후 재검토에서도 미충족 | 해당 태스크 `WARN` 표시 + 사용자 에스컬레이션 |
 | Quality Gate 재실행 실패 | FAIL 2회 | 태스크 중단 + 사유 기록, 다음 태스크 진행 여부 사용자 결정 |
