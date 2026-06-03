@@ -226,12 +226,12 @@ echo "T-001" > .track/current_task   # 현재 태스크 id로 치환
 이 기록이 있어야 probe hook이 이후 write_file/Edit 이벤트를 태스크별로 태깅할 수 있다.
 `.track/` 디렉토리가 없으면 기록을 건너뛴다 (`[ -d .track ] && echo "T-001" > .track/current_task`).
 
-이후 `deliver/skills/conductor/prompts/implementer.md` 템플릿을 사용해
-fresh Codex subagent를 호출한다. 템플릿의 각 플레이스홀더를 현재 태스크 정보로 채운다.
+이후 `.codex/agents/implementer.toml` 파일로 정의된
+fresh Codex subagent를 호출한다. 각 플레이스홀더를 현재 태스크 정보로 채운다.
 
 마찬가지로:
-- Spec Compliance Review: `prompts/spec-reviewer.md` 템플릿 사용
-- Quality Review: `prompts/quality-reviewer.md` 템플릿 사용
+- Spec Compliance Review: `.codex/agents/spec-reviewer.toml` 파일로 정의된 에이전트 사용
+- Quality Review: `.codex/agents/quality-reviewer.toml` 파일로 정의된 에이전트 사용
 
 ### Step 3 — STATUS 처리
 
