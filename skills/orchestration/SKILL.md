@@ -1,9 +1,9 @@
 ---
 name: orchestration
 description: "Select and design the right orchestration pattern for multi-agent systems. Evaluate Sequential, Parallel, Router, and Hierarchical patterns against your use case requirements. Use when deciding how multiple agents should coordinate, share context, or delegate tasks to each other."
-argument-hint: "[multi-agent scenario]"
-tools: ["Read", "Write"]
-model: default
+metadata:
+  short-description: "멀티 에이전트 오케스트레이션 패턴 선택 및 설계"
+  plugin: architect
 ---
 
 # Orchestration Pattern
@@ -43,7 +43,7 @@ model: default
 
 ## Instructions
 
-You are selecting and designing an **orchestration pattern** for: **$ARGUMENTS**
+You are selecting and designing an **orchestration pattern** for the multi-agent scenario the user describes.
 
 ### Step 1 — Assess Requirements
 

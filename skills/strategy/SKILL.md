@@ -1,14 +1,14 @@
 ---
 name: strategy
 description: "전략 설계 통합 — 비즈니스 모델 캔버스(biz-model), 경쟁 해자 분석(moat), 성장 루프 설계(growth-loop) 통합. Use when defining business strategy, competitive positioning, or growth mechanics for an AI product."
-argument-hint: "[product/agent] [--focus biz-model|moat|growth-loop|all]"
-tools: ["Read", "Write"]
-model: default
+metadata:
+  short-description: "전략 설계 통합 — 비즈니스 모델 · 경쟁 해자 · 성장 루프"
+  plugin: architect
 ---
 
 # Strategy — 비즈니스 모델 · 경쟁 해자 · 성장 루프 통합 설계
 
-Running for: **$ARGUMENTS**
+전략 설계 대상 제품/에이전트는 사용자가 요청에서 지정한다.
 
 ## Core Goal
 
@@ -93,7 +93,7 @@ Platform → Network Effects + Data 우선 (양면 시장)
 
 | 거짓 Moat | Copy-Time |
 |----------|-----------|
-| "GPT-4/LLM 사용" | ~1주 |
+| "범용 LLM 사용" | ~1주 |
 | "프롬프트 비밀" | 1~3개월 |
 | "더 많은 데이터" (비독점) | 6~12개월 |
 | "기술이 복잡함" | 3~9개월 |
@@ -159,13 +159,13 @@ TK Injection: PM 암묵지로 초기 품질 확보
 
 ## Instructions
 
-You are designing the **strategy** (biz-model + moat + growth-loop) for: **$ARGUMENTS**
+You are designing the **strategy** (biz-model + moat + growth-loop) for the product/agent the user describes.
 
-`--focus` 파라미터에 따라 해당 섹션만 실행:
-- `--focus biz-model` → 비즈니스 모델 섹션만
-- `--focus moat` → 경쟁 해자 섹션만
-- `--focus growth-loop` → 성장 루프 섹션만
-- `--focus all` (기본값) → 세 섹션 순서대로 전체 실행
+사용자가 요청에서 집중할 영역을 지정하면 해당 섹션만 실행:
+- biz-model 집중 → 비즈니스 모델 섹션만
+- moat 집중 → 경쟁 해자 섹션만
+- growth-loop 집중 → 성장 루프 섹션만
+- 전체 (기본값) → 세 섹션 순서대로 전체 실행
 
 **Step 1 — 제품 개요 파악**
 - 에이전트/제품명, 목적, 타겟 고객, 현재 단계(Pre-PMF/Growth/Expansion)

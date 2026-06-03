@@ -1,9 +1,9 @@
 ---
 name: design-token
-description: "2-step 디자인 파이프라인: --step brief (타겟 분석 → DESIGN_BRIEF.md 생성) → --step token (토큰/DESIGN.md 생성). --step all이 기본값."
-argument-hint: "[타겟 또는 DESIGN_BRIEF.md 경로] [--step brief|token|all]"
-tools: ["Read", "Write"]
-model: default
+description: "2-step 디자인 파이프라인: brief 단계(타겟 분석 → DESIGN_BRIEF.md 생성) → token 단계(토큰/DESIGN.md 생성). 단계 지정이 없으면 brief 후 token 전체 실행."
+metadata:
+  short-description: "2-step 디자인 파이프라인 — 레퍼런스 수집(brief) → 토큰/DESIGN.md 생성(token)"
+  plugin: architect
 ---
 
 # design-token
@@ -11,14 +11,14 @@ model: default
 ## 목적
 2-step 디자인 파이프라인: Phase A (레퍼런스 수집 → DESIGN_BRIEF.md 생성) → Phase B (토큰/DESIGN.md 생성).
 
-Parse `--step` from arguments:
-- `--step brief` → Run Phase A only (design-reference 로직)
-- `--step token` → Run Phase B only (기존 design-token 로직)
-- `--step all` or no flag → Run Phase A then Phase B
+사용자가 요청에서 실행할 단계를 지정한다:
+- `brief` 단계 → Run Phase A only (design-reference 로직)
+- `token` 단계 → Run Phase B only (기존 design-token 로직)
+- 단계 미지정 또는 전체 → Run Phase A then Phase B
 
 ---
 
-## Phase A — 레퍼런스 수집 (--step brief)
+## Phase A — 레퍼런스 수집 (brief 단계)
 
 100개 큐레이션 레퍼런스 기반으로 타겟에 맞는 디자인 방향성을 DESIGN_BRIEF.md로 문서화한다.
 AI가 디자인을 생성하지 않는다. AI는 레퍼런스 필터링과 패턴 추출을 구조화한다.
@@ -104,11 +104,11 @@ references/site-list-kr.md와 references/site-list-global.md에서
 
 ### 게이트 완료 선언 (Phase A)
 DESIGN_BRIEF.md 생성 완료 후:
-> "✅ DESIGN_BRIEF.md 생성됨. `--step token`으로 토큰 생성을 계속하세요."
+> "✅ DESIGN_BRIEF.md 생성됨. token 단계로 토큰 생성을 계속하세요."
 
 ---
 
-## Phase B — 토큰 생성 (--step token)
+## Phase B — 토큰 생성 (token 단계)
 
 DESIGN_BRIEF.md 기반으로 의미 기반 CSS 토큰(tokens.md)과 DESIGN.md 초안을 생성한다.
 AI가 디자인하지 않는다. BRIEF의 근거를 토큰 구조로 변환한다.
@@ -117,7 +117,7 @@ AI가 디자인하지 않는다. BRIEF의 근거를 토큰 구조로 변환한�
 DESIGN_BRIEF.md 존재 여부를 확인한다.
 없으면:
 > "DESIGN_BRIEF.md가 없습니다.
-> `--step brief`를 먼저 실행하거나 직접 토큰 입력을 진행하시겠습니까? (입력: m)"
+> brief 단계를 먼저 실행하거나 직접 토큰 입력을 진행하시겠습니까? (입력: m)"
 
 ### 실행 흐름 (Phase B)
 
@@ -164,4 +164,4 @@ craft/mobile-check가 파싱할 수 있도록 브레이크포인트 섹션을 �
 ```
 
 ## 게이트 완료 선언
-> "✅ tokens.md + DESIGN.md 생성됨. `/mobile-check`로 검증을 진행하세요."
+> "✅ tokens.md + DESIGN.md 생성됨. mobile-check로 검증을 진행하세요."

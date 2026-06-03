@@ -1,9 +1,9 @@
 ---
 name: memory-arch
 description: "Design an agent memory system — working memory, episodic memory, semantic memory, and procedural memory. Use when building agents that need to remember context across sessions, learn from interactions, or maintain persistent knowledge. Covers storage strategy, retrieval patterns, and context management."
-argument-hint: "[agent requiring persistence]"
-tools: ["Read", "Write"]
-model: default
+metadata:
+  short-description: "에이전트 메모리 시스템 설계 — 단기 컨텍스트, 장기 저장, 검색 전략"
+  plugin: architect
 ---
 
 # Memory Architecture
@@ -43,7 +43,7 @@ model: default
 
 ## Instructions
 
-You are designing a **memory architecture** for: **$ARGUMENTS**
+You are designing a **memory architecture** for the agent the user describes.
 
 ### Step 1 — Memory Type Classification
 

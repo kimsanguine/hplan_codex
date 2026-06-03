@@ -1,9 +1,9 @@
 ---
 name: router
 description: "Design a model routing strategy that selects the right LLM for each task type. Balance cost, latency, and quality tradeoffs across models. Use when building agents that call multiple LLMs, optimizing token costs by routing simple tasks to cheaper models, or designing fallback chains."
-argument-hint: "[agent system for routing]"
-tools: ["Read", "Write", "web_search", "web_fetch"]
-model: default
+metadata:
+  short-description: "작업별 최적 LLM 선택 라우팅 전략 설계 (비용/지연/품질 트레이드오프)"
+  plugin: architect
 ---
 
 # Model Router
@@ -43,7 +43,7 @@ model: default
 
 ## Instructions
 
-You are designing a **model routing strategy** for: **$ARGUMENTS**
+You are designing a **model routing strategy** for the agent system the user describes.
 
 ### Step 1 — Task Classification
 
@@ -51,10 +51,10 @@ Classify each agent task by complexity:
 
 | Tier | Complexity | Examples | Recommended Model Class |
 |------|-----------|----------|----------------------|
-| T1 | Simple extraction | Data parsing, formatting, classification | Small/Fast (fast LLM, GPT-4o-mini) |
-| T2 | Standard reasoning | Summarization, comparison, basic analysis | Mid (standard LLM, GPT-4o) |
-| T3 | Complex reasoning | Strategy, creative, multi-step analysis | Large (reasoning LLM, o1) |
-| T4 | Specialized | Code generation, math, domain-specific | Specialist (Codex CLI, Codex) |
+| T1 | Simple extraction | Data parsing, formatting, classification | Small/Fast (fast LLM, gpt-5.4-mini) |
+| T2 | Standard reasoning | Summarization, comparison, basic analysis | Mid (standard LLM, gpt-5.4) |
+| T3 | Complex reasoning | Strategy, creative, multi-step analysis | Large (reasoning LLM, gpt-5.5) |
+| T4 | Specialized | Code generation, math, domain-specific | Specialist (code LLM, gpt-5.3-codex) |
 
 ### Step 2 — Routing Decision Matrix
 
