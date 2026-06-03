@@ -2,9 +2,11 @@
 
 > **WHETHER before HOW** — The most expensive code is code that shouldn't have been written.
 
+> 🇰🇷 한국어 가이드: [README-ko.md](README-ko.md)
+
 PM Build Gate for Codex CLI. Structured decision-making framework for AI-assisted product development.
 
-[![skills](https://img.shields.io/badge/skills-26-blue)](skills/)
+[![skills](https://img.shields.io/badge/skills-28-blue)](skills/)
 [![plugins](https://img.shields.io/badge/plugins-5-green)](skills/)
 [![license](https://img.shields.io/badge/license-MIT-lightgrey)](LICENSE)
 
@@ -40,25 +42,49 @@ hplan → discover → architect → deliver → operate
 
 ## Quick Start
 
-1. **Copy harness templates** to your project:
+**5-minute start** (after cloning):
+```
+$brainstorm "your idea here"
+```
+
+**Full setup** (for complete workflow):
+
+**0. Get hplan_codex**
 ```bash
-cp -r hplan_codex/harness/ your-project/harness/
+git clone https://github.com/kimsanguine/hplan_codex.git
+cd your-project
 ```
 
-2. **Configure Codex CLI** (copy `.codex/` to your project):
-```bash
-cp -r hplan_codex/.codex/ your-project/.codex/
-```
+1. Copy harness templates to your project:
+   ```bash
+   cp -r ../hplan_codex/harness/ ./harness/
+   cp -r ../hplan_codex/.codex/ ./.codex/
+   cp ../hplan_codex/AGENTS.md ./AGENTS.md
+   ```
+2. Run Codex CLI in your project folder
+3. Start:
+   ```
+   $brainstorm "your idea"
+   ```
 
-3. **Start with an idea**:
-```
-$brainstorm [your idea]
-```
+---
 
-4. **Follow the lifecycle**:
-```
-$brainstorm → $socratic-question → $opp-tree → $prd → $conductor
-```
+## Security & Sandbox
+
+hplan_codex runs in Codex CLI's **workspace-write** sandbox by default.
+
+| Mode | Access |
+|---|---|
+| `workspace-read` | Read project files only (spec-reviewer, quality-reviewer) |
+| `workspace-write` | Read + write project files + run bash (implementer, default) |
+
+**Hooks**: Three automatic hooks run in the background:
+- `SessionStart`: Checks for `harness/` directory
+- `PostToolUse`: Logs file writes to `.track/actual_log.jsonl`
+- `Stop`: Validates skill files
+
+**To disable hooks**: Delete or empty `.codex/hooks.json`
+**To use read-only mode**: Set `default_sandbox_mode = "workspace-read"` in `.codex/config.toml`
 
 ---
 
