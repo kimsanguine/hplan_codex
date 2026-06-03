@@ -1,9 +1,9 @@
 ---
 name: pm-engine
 description: "Interface with the PM-ENGINE-MEMORY file — the operator's accumulated PM tacit knowledge database. Enables agents to reference, search, and apply TK (Tacit Knowledge) entries, and supports TK extraction from experience (--mode extract), TK querying and referencing (--mode query), and TK-to-instruction conversion (--mode build). The core of the pm-engine competitive moat. --mode decide for pattern-matching against stored PM decision patterns. --mode save-decision for PRD-linked tech decision logging (harness/tech-decisions/TD-NNN.yaml). --mode index-codebase for scanning project files and surfacing unrecorded decision candidates."
-argument-hint: "[TK query or operation] [--mode extract|query|build|save|decide|save-decision|index-codebase]"
-tools: ["Read", "Write"]
-model: default
+metadata:
+  short-description: PM-ENGINE-MEMORY 인터페이스 — TK 추출·검색·결정 기록·코드베이스 인덱싱
+  plugin: operate
 ---
 
 ## Core Goal
@@ -22,21 +22,21 @@ model: default
 - TK를 에이전트 Instruction으로 변환하여 실제 동작에 반영하고 싶을 때
 - PM의 경험 기록(TK-001~TK-010 같은 시드)을 기반으로 새로운 TK를 추출하고 저장할 때
 - 기존 TK들이 서로 어떻게 연결되는지 확인하거나, 새 TK의 연관성을 매핑할 때
-- "이 경험을 TK로 구조화하고 싶어" → `--mode extract`
-- "PM 판단 패턴을 암묵지로 기록하고 싶어" → `--mode extract`
-- "세션에서 발견한 인사이트를 빠르게 저장하고 싶어" → `--mode save "인사이트"` 사용
-- "기술 결정 이유를 PRD와 함께 기록하고 싶어" → `--mode save-decision`
-- "프로젝트의 주요 기술 결정 중 미기록된 것을 찾고 싶어" → `--mode index-codebase`
+- "이 경험을 TK로 구조화하고 싶어" → extract 모드
+- "PM 판단 패턴을 암묵지로 기록하고 싶어" → extract 모드
+- "세션에서 발견한 인사이트를 빠르게 저장하고 싶어" → save 모드 (인사이트 즉시 저장)
+- "기술 결정 이유를 PRD와 함께 기록하고 싶어" → save-decision 모드
+- "프로젝트의 주요 기술 결정 중 미기록된 것을 찾고 싶어" → index-codebase 모드
 
 ### Route to Other Skills When
 
-- "TK를 구조화해서 라이브러리에 저장하고 싶어" → pm-engine --mode extract 사용
+- "TK를 구조화해서 라이브러리에 저장하고 싶어" → `pm-engine` extract 모드 사용
 - "이 TK가 의사결정에 어떻게 쓰이는지 실제 사례를 보고 싶어" → pm-decision의 패턴 라이브러리 참조
 - "에이전트 Instruction을 새 TK를 기반으로 업데이트하고 싶어" → deliver의 instruction, prd 스킬 사용
 - "TK를 기반으로 비용 시뮬레이션이나 시나리오 분석을 하고 싶어" → discover의 cost-sim, opp-tree 사용
-- "에이전트 실행 중 예측 vs 실측 deviation 을 TK 후보로 자동 추출" → track/retro-extract → /pm-tacit-from-retro 로 자동 promote
+- "에이전트 실행 중 예측 vs 실측 deviation 을 TK 후보로 자동 추출" → track의 retro-extract → from-retro 작업으로 자동 promote
 
-> **Note:** `--mode save`는 다른 스킬로 라우팅하지 않고 직접 TK 항목을 저장한다.
+> **Note:** save 모드는 다른 스킬로 라우팅하지 않고 직접 TK 항목을 저장한다.
 
 ### Boundary Checks
 
@@ -46,13 +46,13 @@ model: default
 
 ---
 
-## `--mode save` — 빠른 인사이트 저장
+## save 모드 — 빠른 인사이트 저장
 
 세션 중 발견한 인사이트를 TK 추출 플로우 없이 즉시 저장한다.
 
 ### 사용법
 ```
-/pm-engine --mode save "인터뷰에서 B2B 고객은 ROI 계산보다 리스크 제거를 더 원함"
+pm-engine save 모드: "인터뷰에서 B2B 고객은 ROI 계산보다 리스크 제거를 더 원함"
 ```
 
 ### 저장 형식
@@ -67,24 +67,24 @@ model: default
 - **적용 가능 상황**: [인사이트에서 추론]
 - **태그**: #quick-save
 
-> ⚠️ TK-QUICK은 정식 TK-NNN 검토 전 임시 항목입니다. `/pm-engine --mode extract`로 정식 등록하거나 삭제하세요.
+> ⚠️ TK-QUICK은 정식 TK-NNN 검토 전 임시 항목입니다. extract 모드로 정식 등록하거나 삭제하세요.
 ```
 
 ### 동작 규칙
 1. `PM-ENGINE-MEMORY.md` 없으면 자동 생성 후 저장
 2. 같은 내용 중복 감지 (첫 20자 매칭) → 중복 경고 후 저장 여부 확인
-3. 저장 후 "TK-QUICK-[ID] 저장됨 — `/pm-engine --mode extract`로 정식 등록 가능" 출력
+3. 저장 후 "TK-QUICK-[ID] 저장됨 — extract 모드로 정식 등록 가능" 출력
 
 ---
 
-## `--mode save-decision` — 기술 결정 + PRD 링크 저장
+## save-decision 모드 — 기술 결정 + PRD 링크 저장
 
 세션 중 내린 기술 결정을 PRD 섹션 링크와 함께 `harness/tech-decisions/` 에 저장한다.
 
 ### 사용법
 ```
-/pm-engine --mode save-decision "Redis 선택 — §13 H2 100ms 가설"
-/pm-engine --mode save-decision "Sequential orchestration 선택 — §7 Anti-Goal: 병렬 디버깅 복잡도 회피"
+pm-engine save-decision 모드: "Redis 선택 — §13 H2 100ms 가설"
+pm-engine save-decision 모드: "Sequential orchestration 선택 — §7 Anti-Goal: 병렬 디버깅 복잡도 회피"
 ```
 
 인자 형식: `"[결정 내용] — [PRD 링크 (선택)]"`
@@ -100,7 +100,7 @@ decision: "[결정 내용]"
 alternatives: []          # 저장 후 사용자가 직접 채울 수 있음
 prd_link: "[PRD 섹션 + 가설 텍스트]"
 evidence: ""              # 관련 harness 파일 경로 (선택)
-outcome: null             # operate/ops-review --mode post-retro 에서 업데이트
+outcome: null             # ops-review 의 post-retro 단계에서 업데이트
 ```
 
 ### TD-NNN 번호 부여 (결정론)
@@ -135,7 +135,7 @@ print(int(n) + 1 if n else 1)
 
 ---
 
-## `--mode index-codebase` — 기술 결정 후보 탐색
+## index-codebase 모드 — 기술 결정 후보 탐색
 
 프로젝트 주요 파일을 스캔하여 기술 스택을 파악하고, 기존 TD 파일과 대조해 **미기록 결정 후보**를 제안한다.
 
@@ -171,7 +171,7 @@ ls harness/tech-decisions/TD-*.yaml 2>/dev/null || echo "TD_NONE"
   - TD-001: [결정 요약]
 
 💡 미기록 결정 후보 (M개):
-  1. [기술 X] — `/pm-engine --mode save-decision "X 선택 — [PRD 링크]"` 로 기록 가능
+  1. [기술 X] — pm-engine save-decision 모드 "X 선택 — [PRD 링크]" 로 기록 가능
   2. [기술 Y] — ...
 ```
 
@@ -217,13 +217,13 @@ TK가 쌓일수록 에이전트의 판단 품질이 올라갑니다.
         ↓
 PM 판단 경험 기록
         ↓
-/pm-tacit-extract
+TK 추출 (extract 모드)
         ↓
 TK-NNN 구조화
         ↓
 PM-ENGINE-MEMORY.md append
         ↓
-/tk-to-instruction
+TK → Instruction 변환
         ↓
 에이전트 System Prompt 업데이트
         ↓
@@ -265,7 +265,7 @@ Contextual Retrieval (CR) 패턴:
 ### PM-ENGINE-MEMORY Seed Library (TK-001 ~ TK-010)
 
 아래는 AI 에이전트 제품을 만드는 PM이 축적할 수 있는 시드 TK입니다.
-`/extract` 커맨드로 자신의 경험에서 TK-011부터 계속 추가하세요.
+extract 모드로 자신의 경험에서 TK-011부터 계속 추가하세요.
 
 ---
 
@@ -445,7 +445,7 @@ TK를 에이전트 Instruction으로 변환하는 방법:
      ↓
 관련 TK 부재 확인
      ↓
-/pm-tacit-extract로 새 TK 추출
+extract 모드로 새 TK 추출
      ↓
 PM-ENGINE-MEMORY append
      ↓
@@ -479,23 +479,23 @@ TK는 고립된 것이 아닙니다. 서로 연결된 지식 그래프입니다.
 ### 사용 방법
 
 ```
-# TK 추출 및 저장
-/pm-tacit-extract [PM 판단 경험]
+# TK 추출 및 저장 (extract 모드)
+extract: [PM 판단 경험]
 
 # TK → Instruction 변환
-/tk-to-instruction [TK 번호 또는 주제]
+tk-to-instruction: [TK 번호 또는 주제]
 
-# TK 기반 의사결정
-/pm-decision-log [현재 상황]
+# TK 기반 의사결정 (decide 모드)
+decide: [현재 상황]
 ```
 
 ---
 
 ### Instructions
 
-**[/pm-tacit-extract 실행 시]**
+**[TK 추출 (extract 모드) 실행 시]**
 
-사용자의 PM 경험에서 암묵지를 추출합니다: **$ARGUMENTS**
+사용자가 설명한 PM 경험에서 암묵지를 추출합니다.
 
 Step 1 — 경험 청취 및 판단 패턴 포착
 Step 2 — TK 유형 분류 (Decision/Failure/Heuristic/Anti-Pattern/Insight)
@@ -503,9 +503,9 @@ Step 3 — TK-NNN 구조로 작성 (활성화/비활성화 조건 포함)
 Step 4 — PM-ENGINE-MEMORY.md에 append할 형식으로 출력
 Step 5 — 기존 TK와 연관 관계 제안
 
-**[/tk-to-instruction 실행 시]**
+**[TK → Instruction 변환 실행 시]**
 
-TK 내용을 에이전트 Instruction 조각으로 변환: **$ARGUMENTS**
+사용자가 지정한 TK 내용을 에이전트 Instruction 조각으로 변환합니다.
 
 Step 1 — 해당 TK 내용 파악
 Step 2 — Instruction 7요소 중 어느 섹션에 들어가는지 결정
@@ -513,9 +513,9 @@ Step 3 — 에이전트가 따를 수 있는 구체적 지시 문장으로 변�
 Step 4 — 변환된 Instruction 조각 출력
 Step 5 — 기존 Instruction과의 충돌 여부 검토
 
-**[/pm-tacit-from-retro 실행 시]**
+**[from-retro 자동 promote 실행 시]**
 
-track/retro-extract 출력 (예측 vs 실측 deviation log) 에서 TK 후보 자동 promote: **$ARGUMENTS**
+track의 retro-extract 출력 (예측 vs 실측 deviation log) 에서 TK 후보를 자동 promote 합니다.
 
 Step 1 — track 산출물 `.track/retro-deviation.jsonl` 로드 (deviation_pct, blocker_pattern, recurrence_count)
 Step 2 — Auto-promote 결정론 기준 검증: deviation_pct ≥ 50% OR recurrence_count ≥ 3 (LLM 호출 0)
@@ -533,7 +533,7 @@ Step 5 — 승인된 TK만 PM-ENGINE-MEMORY.md append, 거부된 것은 `deviati
 
 | 실패 상황 | 감지 | 대응 |
 |---------|------|------|
-| 관련 TK가 없어서 동적 검색 실패 | "No TK found for this context" 또는 빈 결과 | TK가 진짜 없는 건지, 검색 쿼리가 잘못된 건지 확인. 없으면 `/pm-tacit-extract`로 새 TK 추가 후 재검색 |
+| 관련 TK가 없어서 동적 검색 실패 | "No TK found for this context" 또는 빈 결과 | TK가 진짜 없는 건지, 검색 쿼리가 잘못된 건지 확인. 없으면 extract 모드로 새 TK 추가 후 재검색 |
 | 로드한 TK의 활성화 조건이 현재 상황과 불일치 | 에이전트가 TK를 적용했으나 맥락상 맞지 않음 | TK 구조를 리뷰하고 비활성화 조건을 더 명확히. 필요시 새 TK로 분리 |
 | TK 간 연관 관계가 부족하여 관련 지식을 못 찾음 | "연관 TK"를 참조했는데 진짜 필요한 TK를 못 찾음 | 주간 memory-distill 크론에서 🔗 연관 TK를 재점검하고 링크 추가 |
 | Instruction 변환 후 에이전트의 판단이 여전히 낮음 | TK → Instruction 변환은 했는데 실행 품질이 개선 안 됨 | TK는 맞는데 Instruction 문장이 애매한 것. 더 구체적인 지시 문장으로 재작성 |
@@ -677,7 +677,7 @@ TK-NNN: [암묵지 제목]
 
 ### Instructions (extract mode)
 
-You are helping extract and structure PM tacit knowledge from: **$ARGUMENTS**
+You are helping extract and structure PM tacit knowledge from the experience the user describes.
 
 **Step 1** — 상황/경험 청취: 무슨 일이 있었는지, 어떤 판단을 내렸는지 파악
 
@@ -791,17 +791,17 @@ PM Decision Pattern Library — 반복되는 의사결정 상황에서 입증된
 
 ### Instructions (decide mode)
 
-You are helping apply decision patterns to: **$ARGUMENTS**
+You are helping apply decision patterns to the situation the user describes.
 
 **Step 1** — 상황 파악: 어떤 의사결정 상황인지 명확히 정의
 **Step 2** — 패턴 매칭: 라이브러리에서 가장 유사한 패턴 1~2개 찾기
 **Step 3** — 패턴 적용: 해당 패턴의 판단 기준을 현재 상황에 적용
 **Step 4** — 함정 체크: 해당 패턴의 흔한 실수를 현재 상황에서 피하고 있는가?
-**Step 5** — 신규 패턴 가능성: 기존 패턴에 없으면 `--mode extract`로 새 TK 추출
+**Step 5** — 신규 패턴 가능성: 기존 패턴에 없으면 extract 모드로 새 TK 추출
 
 ### 패턴 추가 방법
 
-새로운 의사결정 경험 → `/pm-engine --mode extract`로 구조화 → TK-NNN 번호 부여 → PM-ENGINE-MEMORY.md에 저장 → `--mode decide` 패턴 라이브러리 업데이트
+새로운 의사결정 경험 → extract 모드로 구조화 → TK-NNN 번호 부여 → PM-ENGINE-MEMORY.md에 저장 → decide 모드 패턴 라이브러리 업데이트
 
 ### Quality Gate (decide mode)
 
@@ -817,7 +817,7 @@ You are helping apply decision patterns to: **$ARGUMENTS**
 포트폴리오 헬스 스코어 맥락에서 pm-engine TK를 활용하는 방법:
 
 - **스코어카드 결과 → TK 추출**: 스코어카드에서 반복되는 패턴(특정 축의 지속적 하락)을 TK로 구조화
-- **TK → 운영 의사결정**: `--mode decide`로 스코어카드 이상치 대응 패턴 매칭
+- **TK → 운영 의사결정**: decide 모드로 스코어카드 이상치 대응 패턴 매칭
 - **T1 에이전트 우선**: TK 적용 시 T1 에이전트의 Accuracy·Reliability축 가중치를 높게 설정
 
-포트폴리오 스코어카드 상세 운영은 → `portfolio --mode report` 참조.
+포트폴리오 스코어카드 상세 운영은 → `portfolio` 리포트 모드 참조.

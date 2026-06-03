@@ -1,9 +1,9 @@
 ---
 name: metrics-design
-description: "Design the metrics hierarchy and OKRs for an AI agent — North Star, KPI derivation, and OKR setting. Supports --step north-star | kpi | okr | all (default)."
-argument-hint: "[agent or product] [--step north-star|kpi|okr|all]"
-tools: ["Read", "Write"]
-model: default
+description: "Design the metrics hierarchy and OKRs for an AI agent — North Star, KPI derivation, and OKR setting. Supports north-star | kpi | okr | all (default)."
+metadata:
+  short-description: AI 에이전트 메트릭 계층 + OKR 설계 (North Star → KPI → OKR)
+  plugin: operate
 ---
 
 # metrics-design
@@ -29,7 +29,7 @@ model: default
 
 ### Route to Other Skills When
 
-- **portfolio-report --view scorecard** → 정의된 KPI로 상대 비교 점수화
+- **portfolio (스코어카드 뷰)** → 정의된 KPI로 상대 비교 점수화
 - **burn-rate** → North Star에 비용 효율 요소가 포함될 때
 - **cohort** → North Star 추이를 코호트별로 추적할 때
 - **agent-ab-test** → A/B 테스트의 Primary 메트릭으로 North Star 사용 시
@@ -51,17 +51,17 @@ North Star Metric은 에이전트의 성공을 하나의 숫자로 표현한다.
 
 ## Instructions
 
-You are designing metrics for: **$ARGUMENTS**
+You are designing metrics for the agent or product the user names.
 
-Parse `--step` from the arguments:
-- `--step north-star` → Run Phase A only
-- `--step kpi` → Run Phase B only
-- `--step okr` → Run Phase C only (OKR 설계)
-- `--step all` or no `--step` flag → Run Phase A then Phase B then Phase C (default)
+사용자가 어느 단계를 원하는지 자연어로 파악한다:
+- "north-star만" → Run Phase A only
+- "kpi만" → Run Phase B only
+- "okr만" → Run Phase C only (OKR 설계)
+- 별도 지정이 없으면 → Run Phase A then Phase B then Phase C (default)
 
 ---
 
-### Phase A — North Star 정의 (`--step north-star` or `--step both`)
+### Phase A — North Star 정의 (north-star 단계 또는 전체 실행)
 
 **A1 — North Star Criteria 체크**
 
@@ -143,7 +143,7 @@ Anti-metric 2: [악화되면 안 되는 지표]
 
 ---
 
-### Phase B — KPI 파생 (`--step kpi` or `--step both`)
+### Phase B — KPI 파생 (kpi 단계 또는 전체 실행)
 
 **B1 — 운영 건강도 KPI**
 
@@ -253,7 +253,7 @@ Lagging (과거 성과 확인):
 
 ## Examples
 
-### Good Example — `--step both`
+### Good Example — North Star + KPI 단계
 
 ```
 입력: "고객 지원 에이전트 메트릭 설계해줘"
@@ -333,7 +333,7 @@ North Star 추이를 버전별·세그먼트별·TK 축적 단계별로 추적�
 
 ---
 
-## Phase C — OKR 설계 (`--step okr` or `--step all`)
+## Phase C — OKR 설계 (okr 단계 또는 전체 실행)
 
 ### Core Goal
 

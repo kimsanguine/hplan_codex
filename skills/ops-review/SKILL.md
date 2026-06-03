@@ -1,9 +1,9 @@
 ---
 name: ops-review
 description: "주간/월간 운영 리뷰 — 비용 추적(burn-rate)과 주간 롤업(weekly-rollup) 통합. 실제 LLM 비용 vs COGS 예측 대조, 주간 지표 요약, 이상 감지, 다음 스프린트 예산 권고. Use when running regular operational reviews."
-argument-hint: "[--mode cost|weekly|full]"
-tools: ["Read", "Write"]
-model: default
+metadata:
+  short-description: 주간/월간 운영 리뷰 — 토큰 비용 추적 + 주간 지표 롤업 통합
+  plugin: operate
 ---
 
 # Ops Review
@@ -23,9 +23,9 @@ model: default
 
 ### Use This Skill When
 
-- 에이전트의 월간 토큰 비용을 추적하거나 최적화해야 할 때 (`--mode cost`)
-- 주간 지표 요약과 운영 신호를 빠르게 확인해야 할 때 (`--mode weekly`)
-- 비용 리뷰 + 주간 롤업을 한 번에 수행해야 할 때 (`--mode full`)
+- 에이전트의 월간 토큰 비용을 추적하거나 최적화해야 할 때 (비용 리뷰)
+- 주간 지표 요약과 운영 신호를 빠르게 확인해야 할 때 (주간 롤업)
+- 비용 리뷰 + 주간 롤업을 한 번에 수행해야 할 때 (전체 리뷰)
 - 모델 선택(Sonnet vs Haiku vs Opus)이 비용에 미치는 영향을 정량화해야 할 때
 - 월간 예산을 초과했거나 초과할 위험이 있을 때
 
@@ -51,16 +51,16 @@ model: default
 
 ## Instructions
 
-You are running an ops review for: **$ARGUMENTS**
+You are running an ops review for the agent or period the user names.
 
-Parse `--mode` from the arguments:
-- `--mode cost` → Run Cost Review only
-- `--mode weekly` → Run Weekly Rollup only
-- `--mode full` or no `--mode` flag → Run both (default)
+사용자가 어떤 리뷰를 원하는지 자연어로 파악한다:
+- "비용 리뷰만" → Run Cost Review only
+- "주간 롤업만" → Run Weekly Rollup only
+- 별도 지정이 없으면 → Run both (default)
 
 ---
 
-### Cost Review (`--mode cost` or `--mode full`)
+### Cost Review (비용 리뷰 또는 전체 리뷰)
 
 #### C1 — Cost Baseline
 
@@ -152,7 +152,7 @@ Alert Owner: [who gets notified]
 
 ---
 
-### Weekly Rollup (`--mode weekly` or `--mode full`)
+### Weekly Rollup (주간 롤업 또는 전체 리뷰)
 
 #### W1 — 데이터 적재
 
@@ -230,7 +230,7 @@ Alert Owner: [who gets notified]
 
 ## Examples
 
-### Good Example — `--mode cost`
+### Good Example — 비용 리뷰
 
 ```
 비용 추적: AI 고객 지원 에이전트
@@ -254,7 +254,7 @@ Alert Owner: [who gets notified]
 - 결과: 월간 예상 절감 = -30% → $567/월
 ```
 
-### Good Example — `--mode weekly`
+### Good Example — 주간 롤업
 
 ```
 주차: 2026-W21
