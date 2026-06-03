@@ -8,7 +8,7 @@
     {
       "event": "PostToolUse",
       "matcher": {
-        "tool_name": ["write_file"],
+        "tool_name": ["write_file", "apply_patch"],
         "file_path_pattern": "\\.track/.*\\.jsonl$"
       },
       "description": "Track file write events to actual_log.jsonl",
