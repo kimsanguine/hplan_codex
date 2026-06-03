@@ -226,3 +226,23 @@ Signal Gate Bootstrap 완료:
   
 다음: /deliver:prd [제품명]
 ```
+
+---
+
+## Quality Gate
+
+### Phase 0 (Worth-Building Check)
+- [ ] 특정 사람 식별됨 (직군/역할 1문장)
+- [ ] 우회로 없음 확인 (기존 해결책 vs 제안 비교)
+- [ ] 행동 변화 경로 명시 (왜 이 사람이 쓸 것인가)
+
+### Phase 1 (Idea Design)
+- [ ] 접근법 2-3개 제시됨 (단일 옵션 금지)
+- [ ] 접근법별 장단점 명시
+
+### Phase 2 (Signal Gate Bootstrap)
+- [ ] harness/pain.md 씨앗 생성됨
+- [ ] harness/brainstorm-assumptions.md 생성됨
+- [ ] harness/PRD-draft-section1.md 생성됨
+
+**완료 판정**: Phase 2 산출물 3개 모두 존재 시 PASS
