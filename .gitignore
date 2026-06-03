@@ -1,0 +1,19 @@
+# Codex CLI
+.codex/cache/
+.codex/sessions/
+
+# Harness (user data — not committed)
+harness/pain.md
+harness/decision-log.jsonl
+harness/build-gate/
+.track/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+
+# OS
+.DS_Store
+Thumbs.db
