@@ -1,14 +1,14 @@
 ---
 name: decision-log
 description: "Append-only build/interview/pivot/hold/CONDITIONAL_GO decision log with 3-6 month self-eval audit. Records every gate decision with score + reasons; later backfilled with outcome (shipped, killed, alive_no_revenue, pivoted, external_success) to compute hit_rate, false_holds, and missed_builds. The only PM gate skill that measures its own accuracy over time."
-argument-hint: "[log|update|audit] <args>"
-tools: ["Read", "Write", "Bash"]
-model: default
+metadata:
+  short-description: "Append-only gate 결정 로그 + 3-6개월 후 hit_rate self-audit"
+  plugin: hplan
 ---
 
 # Decision Log — Self-Calibrating Build Gate
 
-Running for: **$ARGUMENTS**
+Running for: **the user's input**
 
 ## Core Goal
 

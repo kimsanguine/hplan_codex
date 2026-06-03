@@ -1,18 +1,14 @@
 ---
 name: evidence-rubric
 description: "Score a product idea against the 100-point evidence rubric before any PRD work. Eight axes: ICP specificity, recent painful event, current workaround, repetition, economic pain, switching trigger, MVP narrowness, and acquisition path to first 5 users. Returns build/interview/pivot/hold decision plus the specific axes that are weak. Use when a founder or PM is excited about an idea but evidence is thin, or before approving any spec-driven coding workflow (Spec-Kit, Kiro, GStack, Superpowers)."
-argument-hint: "[idea to score]"
-tools: ["Read", "Write", "Bash"]
-model: default
-hooks:
-  Stop:
-    - type: command
-      command: "python3 hplan/scripts/generate_report.py harness/evidence/last_input.json --json 2>/dev/null | tail -50 || true"
+metadata:
+  short-description: "아이디어를 100점 evidence 루브릭으로 결정론적 채점 → build/interview/pivot/hold 판정"
+  plugin: hplan
 ---
 
 # Evidence Rubric — 100-Point Idea Scoring
 
-Running for: **$ARGUMENTS**
+Running for: **the user's input**
 
 ## Core Goal
 
@@ -31,7 +27,7 @@ Running for: **$ARGUMENTS**
 
 ### Route to Other Skills When
 
-- 점수가 낮고 인터뷰 자체가 부족할 때 → `interview-synthesis` (hplan plugin)
+- 점수가 낮고 인터뷰 자체가 부족할 때 → `discover/customer-reach` 의 `--mode interview-questions`
 - 이미 점유된 영역으로 보일 때 → `exclusions` (hplan plugin) check
 - 점수는 충분한데 비용 구조가 불확실할 때 → `cogs-sentinel` (hplan plugin)
 - 아이디어 발굴 단계로 돌아가야 할 때 → `opp-tree` (discover plugin)
@@ -64,8 +60,10 @@ JSON 파일 또는 인라인 입력:
 3. Save to `harness/evidence/last_input.json`.
 4. Run `python3 hplan/scripts/generate_report.py <path> --json`.
 5. Report score + decision + breakdown + missing axes.
-6. If `decision == "interview"`, immediately route to `interview-synthesis` skill.
+6. If `decision == "interview"`, immediately route to `discover/customer-reach` 의 `--mode interview-questions` (다음 인터뷰에서 들어야 할 신호를 질문 세트로 설계).
 7. If `decision == "build"`, write the report to `harness/evidence/report.md` and route to `cogs-sentinel`.
+
+> 결과 리포트는 수동 실행으로 확인한다: `python3 hplan/scripts/generate_report.py harness/evidence/last_input.json --json | tail -50`
 
 ## Outputs
 

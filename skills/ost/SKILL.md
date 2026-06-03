@@ -1,14 +1,14 @@
 ---
 name: ost
-description: "Generate a Teresa Torres-style Opportunity Solution Tree as docs/OPPORTUNITY_TREE.md with auto-rendered Mermaid diagram. Forces the discipline: opportunities are unmet user needs (not solutions), each solution links to exactly one experiment with a decision rule, and opportunities backed by fewer than 3 strong-Push interviews are flagged or pruned. Use as the Product Gate's primary artifact, after interview-synthesis has tagged enough strong-push quotes."
-argument-hint: "[path to ost.json]"
-tools: ["Read", "Write", "Bash"]
-model: default
+description: "Generate a Teresa Torres-style Opportunity Solution Tree as docs/OPPORTUNITY_TREE.md with auto-rendered Mermaid diagram. Forces the discipline: opportunities are unmet user needs (not solutions), each solution links to exactly one experiment with a decision rule, and opportunities backed by fewer than 3 strong-Push interviews are flagged or pruned. Use as the Product Gate's primary artifact, after enough strong-push interview quotes have been gathered."
+metadata:
+  short-description: "Teresa Torres Opportunity Solution Tree를 Mermaid 포함 1급 artifact로 생성"
+  plugin: hplan
 ---
 
 # Opportunity Solution Tree — Product Gate Primary Artifact
 
-Running for: **$ARGUMENTS**
+Running for: **the user's input**
 
 ## Core Goal
 
@@ -20,13 +20,14 @@ Running for: **$ARGUMENTS**
 
 ### Use This Skill When
 
-- `interview-synthesis`에서 5/3 패턴 PROCEED 통과 후
+- 강한 Push 신호를 가진 인터뷰가 충분히(strong-push ≥ 3건) 쌓여 5/3 패턴을 통과한 후
 - Product Gate 진입 시 첫 산출물
 - Opportunity 우선순위 재검토 시
 - Stakeholder에게 "왜 이걸 만드는지" 시각화 필요할 때
 
 ### Route to Other Skills When
 
+- 인터뷰 질문 설계가 더 필요할 때 → `discover/customer-reach` 의 `--mode interview-questions`
 - 탐색 자체가 부족할 때 → `discover/opp-tree` (exploration mode)
 - OST 완성 후 PRD shape 정의 → `deliver/prd`
 - 가설 깊이 검증 → `discover/assumptions` (V/F/R/E 4축)
@@ -61,7 +62,7 @@ Running for: **$ARGUMENTS**
 
 ## Steps
 
-1. `interview-synthesis audit` 결과의 `persons_with_strong_push`를 opportunity의 evidence로 사용.
+1. 인터뷰에서 strong-push로 태깅된 사람 수(`persons_with_strong_push`)를 opportunity의 evidence_count로 사용한다. strong-push = "최근 실제로 겪은 painful event + 현재 workaround"가 동시에 확인된 응답자.
 2. opportunity는 "X가 Y를 못 한다" 형태 — solution 아님.
 3. 각 solution마다 `experiment` + `decision_rule` 명시.
 4. `python3 hplan/scripts/ost_generator.py ost.json --out docs/OPPORTUNITY_TREE.md`.
