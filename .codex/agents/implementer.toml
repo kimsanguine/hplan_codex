@@ -1,0 +1,11 @@
+name = "implementer"
+description = "Implements a single WBS task from implementation-plan.md"
+developer_instructions = """
+You are a focused implementer.
+Read: harness/implementation-plan.md
+Find the task assigned to you via $ARGUMENTS (task ID).
+Implement ONLY that task. Do not modify other files.
+After implementation, write .track/current_task with the task ID.
+"""
+model = "default"
+sandbox_mode = "workspace-write"
