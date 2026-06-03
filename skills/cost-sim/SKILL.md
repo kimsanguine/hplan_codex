@@ -1,19 +1,17 @@
 ---
 name: cost-sim
 description: "Simulate and forecast agent operating costs before building. Model token consumption, API call frequency, and monthly burn rate across different models and usage patterns. Use when evaluating agent feasibility, setting cost KPIs, or comparing build vs buy economics. Prevents the 'it's just API calls' cost surprise."
-argument-hint: "[agent to model costs for]"
-tools: ["Read", "Write", "web_search", "web_fetch"]
-model: default
-hooks:
-  Stop:
-    - type: command
-      command: "bash scripts/validate-cost-sim.sh . 2>/dev/null || true"
+metadata:
+  short-description: "구현 전 에이전트 운영 비용(토큰·API·스케일)을 사전 시뮬레이션"
+  plugin: discover
 ---
 
 ## Core Goal
 - 에이전트 운영 비용을 사전에 시뮬레이션하여 비용 폭탄을 방지한다.
 - 토큰/API/외부 서비스 비용을 통합 모델링한다.
 - 스케일 시나리오(1→10→100→1,000명)별 비용 곡선을 예측한다.
+
+> 모델·외부 API 단가는 빠르게 변동하므로, 정확한 최신 단가가 필요하면 web search로 공식 가격 페이지를 확인한다.
 
 ---
 
@@ -26,13 +24,10 @@ hooks:
 - "이거 비용 얼마 들어?" 류의 질문이 나올 때
 
 ### Route to Other Skills When
-- 비용이 아닌 모델 성능/품질 기준이면 → `router` (모델 라우팅)
-- 비용 **추적/최적화**(이미 운영 중)면 → `burn-rate`
-- 비용이 과다해서 직접 구축 vs 외부 솔루션을 비교한다면 → `build-or-buy`
-- 결정론적 p50/p90 마진 + free-user abuse 시뮬레이션 수치가 필요할 때 → `cogs-sentinel` (hplan plugin)
+- 비용이 과다해서 직접 구축 vs 외부 솔루션을 비교한다면 → `assumptions`의 build-or-buy 모드
 
 ### Boundary Checks
-- 이 스킬은 **사전 시뮬레이션** 전용이다. 실 비용 추적/모니터링은 `burn-rate` 범위.
+- 이 스킬은 **사전 시뮬레이션** 전용이다. 실 비용 추적/모니터링은 범위 밖.
 - 모델 가격은 2026-03 기준이며 빠르게 변동함을 항상 명시한다.
 - 추정치를 확정 수치로 표현하지 않는다 — 범위(range)로 제시.
 
@@ -73,7 +68,7 @@ Total Token Cost = (Input + Output) × 호출 횟수
 | GPT-4o | $2.50 | $10.00 | 범용 |
 | GPT-4o-mini | $0.15 | $0.60 | 저비용 대안 |
 
-> ⚠️ 모델 가격은 빠르게 변동합니다. 실제 계획 시 최신 가격 확인 필수.
+> ⚠️ 모델 가격은 빠르게 변동합니다. 실제 계획 시 web search로 최신 가격 확인 필수.
 
 **요소 2 — 호출 빈도 (Call Frequency)**
 
@@ -159,7 +154,6 @@ API 소계: $C/월
 ```
 전체 문서 대신 요약본 입력
 10,000 tokens → 2,000 tokens = 80% 입력 비용 절감
-→ context-window-budget 스킬과 연계
 ```
 
 **전략 4 — 배치 처리**
@@ -173,34 +167,21 @@ API 소계: $C/월
 ```
 월간 비용 상한: $N
 초과 시: 에이전트 일시 중지 + 알림
-→ metrics-design --step okr의 비용 KR과 연결
+→ 비용 KR과 연결
 ```
-
----
-
-## Project Context (auto-injected)
-
-> 아래 섹션은 스킬 실행 시 자동으로 현재 프로젝트 데이터로 치환됩니다.
-> 도구가 설치되지 않은 경우 graceful하게 건너뜁니다.
-
-**프로젝트 메모리:**
-!`cat .codex/MEMORY.md 2>/dev/null || echo "프로젝트 메모리 없음 — .codex/MEMORY.md를 생성하면 자동 참조됩니다."`
-
-**최근 API 사용량 (참고용):**
-!`cat .codex/usage.json 2>/dev/null || cat logs/api-usage*.log 2>/dev/null | tail -20 || echo "사용량 데이터 없음 — .codex/usage.json 또는 logs/ 디렉토리에 사용량 로그가 있으면 자동 참조됩니다."`
 
 ---
 
 ## Instructions
 
-You are helping simulate the operating cost for: **$ARGUMENTS**
+You are helping simulate the operating cost for: 사용자가 비용을 모델링하려는 에이전트.
 
 **Step 1 — 에이전트 프로파일링**
 - 에이전트 유형, 트리거 빈도, 사용 모델 확인
 - 호출당 평균 입력/출력 토큰 추정
 
 **Step 2 — 토큰 비용 계산**
-- 모델별 단가 적용
+- 모델별 단가 적용 (최신 단가가 불확실하면 web search로 공식 가격 확인)
 - 일간/월간/연간 비용 산출
 
 **Step 3 — 외부 API 비용 추가**
@@ -221,11 +202,11 @@ You are helping simulate the operating cost for: **$ARGUMENTS**
 
 **Step 7 — 비용 KPI 제안**
 - 월간 비용 상한 권장값
-- `operate/metrics-design --step okr`의 Operational Health KR로 연결
+- Operational Health KR로 연결
 
 **Step 8 — 다음 단계**
-- 비용이 수용 가능 → `/agent-instruction-design`으로 설계
-- 비용이 과다 → 모델 다운그레이드 또는 `/build-or-buy` 재검토
+- 비용이 수용 가능 → 에이전트 인스트럭션 설계로 진행
+- 비용이 과다 → 모델 다운그레이드 또는 `assumptions`의 build-or-buy 모드 재검토
 
 ---
 
@@ -234,7 +215,7 @@ You are helping simulate the operating cost for: **$ARGUMENTS**
 | 실패 상황 | 감지 | 대응 |
 |---|---|---|
 | 사용자가 모델/트리거 빈도를 모름 | Step 1에서 필수 입력 누락 | 유형별 기본값 표 제시 후 선택 요청 |
-| 외부 API 가격 정보가 변동됨 | 단가 조회 불일치 | "2026-03 기준 추정치"로 명시 + 공식 링크 제공 |
+| 외부 API 가격 정보가 변동됨 | 단가 조회 불일치 | "2026-03 기준 추정치"로 명시 + web search로 공식 링크 제공 |
 | 스케일 시나리오에서 비선형 비용 증가 | 100명 비용이 1명의 200배 이상 | Orchestrator 호출 폭증 가능성 경고 + 모델 라우팅/캐싱 전략 즉시 제안 |
 
 ---
@@ -245,7 +226,7 @@ You are helping simulate the operating cost for: **$ARGUMENTS**
 - [ ] 스케일 시나리오 3단계(1/10/100명)가 모두 포함되었는가 (3/3)
 - [ ] 최적화 전략이 최소 2개 이상 제안되었는가 (Yes/No)
 - [ ] 모든 단가에 기준일이 명시되었는가 (Yes/No)
-- [ ] 다음 단계 연결(metrics-design --step okr/instruction/build-or-buy)이 제안되었는가 (Yes/No)
+- [ ] 다음 단계 연결(metrics/instruction/build-or-buy)이 제안되었는가 (Yes/No)
 
 ---
 

@@ -1,10 +1,12 @@
 ---
 name: socratic-question
 description: "어떤 결정·아이디어든 AI에게 시키기 전에, AI가 나를 먼저 심문하게 만드는 소크라테스 질문법 도구. 6 질문유형 + 소크라테스식 루프 + 3 심화질문 + CoT 판단구조로 '사고 검증 질문 세트' 1장을 만든다. Use when 정답이 하나가 아닌 판단(기획·가격·채용·투자·제품 범위 등)을 앞두고, 작은 PRD/기획서/리서치를 쓰기 전에 가정을 먼저 점검하고 싶을 때. 단순 사실 질문엔 쓰지 않음."
-argument-hint: "[검토할 아이디어 또는 결정]"
-tools: ["Read", "Write"]
-model: reasoning
+metadata:
+  short-description: "AI에게 시키기 전에 AI가 나를 심문하게 만드는 소크라테스 질문 세트 도구"
+  plugin: discover
 ---
+
+> 이 스킬은 깊은 추론이 유리합니다 — `model_reasoning_effort=high` 권장.
 
 ## Core Goal
 
@@ -27,10 +29,9 @@ AI에게 답을 **맡기기 전에**, AI가 나에게 **더 좋은 질문을 먼
 - AI의 답이 너무 그럴듯해서 의심이 안 될 때 (그럴듯함 속 약한 가정을 끄집어내기)
 
 ### Route to Other Skills When
-- 질문 세트로 가정을 흔든 *뒤* 실제 PRD/태스크를 쓸 때 → `discover/opp-tree` (기회 발굴) 또는 `/newtask` · `/build` (구현 시작)
-- 핵심 가정 4축(Value/Feasibility/Reliability/Ethics) 체계 검증 → `discover/assumptions`
-- 단위 경제성 시뮬레이션 → `discover/cost-sim`
-- 전체 하네스 플로우 시작 → `/hplan [idea]`
+- 질문 세트로 가정을 흔든 *뒤* 실제 PRD/태스크를 쓸 때 → `opp-tree` (기회 발굴) 또는 구현 시작
+- 핵심 가정 4축(Value/Feasibility/Reliability/Ethics) 체계 검증 → `assumptions`
+- 단위 경제성 시뮬레이션 → `cost-sim`
 
 ### Boundary Checks
 - **단순 사실 질문엔 쓰지 않는다.** "Python 딕셔너리 정렬법" 같은 정답 하나짜리엔 불필요. *정답이 하나가 아닌 판단*에만.
@@ -120,31 +121,29 @@ AI에게 답을 **맡기기 전에**, AI가 나에게 **더 좋은 질문을 먼
 | 관점 전환 | 고객/개발자/경영진은 다르게 볼까? | 한쪽 시야에 갇힌 결정 |
 
 - **맨 위에 "오늘 드러난 가장 약한 가정"을 한 줄**로 적어 둔다 → 다음에 펼칠 때 바로 이어진다.
-- 저장: 사용자의 `customer_context/` 폴더(없으면 작업 폴더)에 `사고검증-질문세트-<주제>.md`로 Write.
+- 저장: 사용자의 `customer_context/` 폴더(없으면 작업 폴더)에 `사고검증-질문세트-<주제>.md`로 저장.
 - 가장 값진 순간은 *대답하지 못하는 질문*을 만났을 때다. 못 채운 칸을 발견하는 것이 진짜 수확.
 
 ---
 
 ## 사용 방법
 
-```
-/socratic-question [검토할 아이디어 또는 결정]
-```
+`$socratic-question`을 검토할 아이디어 또는 결정과 함께 호출한다.
 
-예: `/socratic-question 세탁소 예약앱` · `/socratic-question 구독 가격을 올릴까`
+예: 세탁소 예약앱 · 구독 가격을 올릴까
 
 ---
 
 ## Instructions
 
-You are a **Socratic 비평가(devil's advocate)** for the user's decision: **$ARGUMENTS**
+You are a **Socratic 비평가(devil's advocate)** for the user's decision: 사용자가 검토하려는 아이디어 또는 결정.
 
 너의 임무는 답(문서·코드·기획서)을 바로 쓰는 게 아니라, 위 **황금률**을 지키며
 사용자를 심문해 *스스로 빈칸을 발견하게* 만들고, 끝에 **'사고 검증 질문 세트' 1장**을 남기는 것이다.
 
 사용자 입력을 받을 때는 질문을 텍스트로 출력하고 응답을 기다립니다.
 
-**Step 1** — 검토할 아이디어/결정(`$ARGUMENTS`)을 사용자가 *한 문장*으로 말하게 한다. 모호하면 ①명료화로 좁힌다.
+**Step 1** — 검토할 아이디어/결정을 사용자가 *한 문장*으로 말하게 한다. 모호하면 ①명료화로 좁힌다.
 **Step 2** — 소크라틱 메타프롬프트 모드 선언: "바로 답하지 않고, 네가 놓쳤을 질문을 먼저 한다." (devil's advocate 역할 명시)
 **Step 3** — **3 심화 질문**(프레임 빌리기 · 의견 갈리는 지점 · 검증)을 축으로, 필요하면 **6유형**에서 골라 *한 번에 3~4개씩* 던진다.
 **Step 4** — 사용자가 솔직히 답하게 하고, **막히는 지점(아포리아)**이 나오면 *멈추지 말고 ④대안으로 한 번 더* 파고든다. 답이 약하면 `추정` 라벨.
@@ -207,27 +206,16 @@ You are a **Socratic 비평가(devil's advocate)** for the user's decision: **$A
 
 ---
 
-## hplan 위치
+## discover 위치
 
 이 스킬은 `discover` 플러그인의 **Phase 0** 진입점입니다.
 
 ```
 소크라테스 질문 (이 스킬)
     ↓ 가정이 명확해지면
-discover/opp-tree       → 기회 발굴 (어디에 문제가 쌓였나)
-discover/assumptions    → 4축 가정 감사
-discover/cost-sim       → 단위 경제성
-    ↓
-/hplan [idea]           → Signal Gate + 하네스 전체 플로우
+opp-tree       → 기회 발굴 (어디에 문제가 쌓였나)
+assumptions    → 4축 가정 감사
+cost-sim       → 단위 경제성
 ```
 
-**`harness-discover --mode opp`보다 먼저**: 아이디어는 있지만 "만들 가치가 있나" 가정이 불분명할 때 이 스킬로 먼저 가정을 심문하세요.
-
----
-
-## Contextual Knowledge (auto-loaded)
-
-> 보조 파일이 존재할 때만 자동 로드됩니다. 파일이 없으면 건너뜁니다.
-
-### 세탁소 Worked Example
-!`cat references/worked-example-laundry.md 2>/dev/null || echo ""`
+**기회 발굴(`opp-tree`)보다 먼저**: 아이디어는 있지만 "만들 가치가 있나" 가정이 불분명할 때 이 스킬로 먼저 가정을 심문하세요.

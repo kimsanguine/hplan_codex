@@ -1,9 +1,9 @@
 ---
 name: assumptions
 description: "Identify and prioritize the riskiest assumptions in an agent idea across four axes: Value, Feasibility, Reliability, and Ethics. Use after defining an agent opportunity and before starting implementation. Prevents building agents that work technically but fail operationally or cause unintended harm. Includes build-or-buy vendor decision framework."
-argument-hint: "[agent idea to analyze] [--mode validate|build-or-buy]"
-tools: ["Read", "Write"]
-model: default
+metadata:
+  short-description: "에이전트 아이디어의 위험 가정을 4축으로 발굴·우선순위화 + build-or-buy 판단"
+  plugin: discover
 ---
 
 ## Core Goal
@@ -23,10 +23,8 @@ model: default
 - 윤리/안전 위험(예: 잘못된 판단이 고객에게 영향)이 있을 수 있다고 생각할 때
 
 ### Route to Other Skills When
-- 검증 실험 설계 후 실제로 프롬프트/API를 테스트해야 할 때 → `hitl` 스킬 (Human-in-the-Loop으로 초기 신뢰도 측정) 또는 `build-or-buy` 스킬
+- 검증 실험 설계 후 실제로 프롬프트/API를 테스트해야 할 때 → `hitl` 스킬 (Human-in-the-Loop으로 초기 신뢰도 측정) 또는 이 스킬의 build-or-buy 모드
 - 가정 검증 결과 위험도가 매우 높으면 → `hitl` 스킬로 에스컬레이션 전략 설계
-- 검증 통과 후 에이전트 설계 및 프롬프트/인스트럭션을 작성해야 할 때 → `agent-instruction-design` (deliver 플러그인)
-- 8축 100점 evidence 루브릭으로 정량 채점이 필요할 때 → `evidence-rubric` (hplan plugin). V/F/R/E 4축과 상보적.
 
 ### Boundary Checks
 - **검증의 범위**: Assumptions는 가정을 "정의"하고 "우선순위"를 정하는 것이지, 실제로 검증 실험을 끝까지 실행하지는 않음 — 실험 실행은 팀이 직접 담당
@@ -145,17 +143,17 @@ Priority Score 상위 3개 가정 → 실험 설계로 연결
 
 ### 사용 방법
 
-`/agent-assumptions [에이전트 아이디어 또는 이름]`
+`$assumptions`를 에이전트 아이디어 또는 이름과 함께 호출한다. build-or-buy 판단이 필요하면 build-or-buy 모드로 호출한다.
 
 ---
 
 ### Instructions
 
-You are helping identify and prioritize the riskiest assumptions for: **$ARGUMENTS**
+You are helping identify and prioritize the riskiest assumptions for: 사용자가 분석하려는 에이전트 아이디어.
 
 **Step 1 — 에이전트 개요 파악**
 - 에이전트 목적, 주요 기능, 타겟 사용자 확인
-- 이미 정의된 Automation Outcome 확인 (agent-opportunity-tree와 연계)
+- 이미 정의된 Automation Outcome 확인 (opp-tree와 연계)
 
 **Step 2 — 4축 가정 브레인스토밍**
 - 각 축 (Value / Feasibility / Reliability / Ethics)에 대해
@@ -176,9 +174,9 @@ You are helping identify and prioritize the riskiest assumptions for: **$ARGUMEN
 - Human-in-the-loop 설계가 필요한지 판단
 
 **Step 6 — 다음 단계 연결**
-- 검증 실험이 통과되면 `/agent-instruction-design`으로 연결
-- Ethics 위험이 높으면 `/human-in-loop-design`으로 먼저 연결
-- 검증 결과 실패 시 `agent-opportunity-tree`로 되돌아가 기회 재탐색
+- 검증 실험이 통과되면 에이전트 인스트럭션 설계로 연결
+- Ethics 위험이 높으면 `hitl` 스킬로 먼저 연결
+- 검증 결과 실패 시 `opp-tree`로 되돌아가 기회 재탐색
 
 ---
 
@@ -284,7 +282,7 @@ Assumption: "API가 있으니까 가능하다"
 
 ## Build-or-Buy 판단 프레임워크
 
-`--mode build-or-buy`로 호출하거나, Feasibility 가정 검증 후 "직접 만들 것인가" 결정이 필요할 때 이 섹션을 활성화한다.
+build-or-buy 모드로 호출하거나, Feasibility 가정 검증 후 "직접 만들 것인가" 결정이 필요할 때 이 섹션을 활성화한다.
 
 **핵심 판단 기준 4가지**
 

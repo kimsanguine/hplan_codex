@@ -1,9 +1,9 @@
 ---
 name: hitl
 description: "Design where and how humans should intervene in agent workflows. Define automation boundaries, escalation triggers, and approval gates. Use when building agents that make consequential decisions, handle sensitive data, or operate in domains where errors have high impact. Prevents the 'fully autonomous' default trap."
-argument-hint: "[agent workflow to design]"
-tools: ["Read", "Write"]
-model: default
+metadata:
+  short-description: "에이전트 워크플로우의 인간 개입 지점·승인 게이트·에스컬레이션 설계"
+  plugin: discover
 ---
 
 ## Core Goal
@@ -23,10 +23,9 @@ model: default
 - 초기 배포 또는 새로운 에이전트를 출시할 때 (사용자 신뢰 구축 전)
 
 ### Route to Other Skills When
-- HITL 설계가 완료된 후 에이전트 프롬프트와 인스트럭션을 작성해야 할 때 → `agent-instruction-design` (deliver 플러그인) — Failure Handling에 HITL 전략 반영
-- 에이전트의 신뢰도를 측정하고 Full Autonomous로 전환할지 판단해야 할 때 → `agent-ab-test` (measure 플러그인)
-- 에이전트 제품을 외부에 출시할 때 신뢰 구축 시퀀스를 설계해야 할 때 → `agent-gtm` (discover 플러그인)
-- *빌드 시점* PreToolUse 차단 (PRD/spec 파일 작성을 게이트 미통과 시 막기) → `hooks/gate_guard.py` (hplan plugin). 이 skill의 hitl은 *agent 런타임* — 시점이 다름.
+- HITL 설계가 완료된 후 에이전트 프롬프트와 인스트럭션을 작성해야 할 때 → 에이전트 인스트럭션 설계의 Failure Handling에 HITL 전략 반영
+- 에이전트의 신뢰도를 측정하고 Full Autonomous로 전환할지 판단해야 할 때 → 에이전트 A/B 테스트 단계
+- 가정 발굴 후 Ethics 위험이 높게 나온 에이전트라면 → `assumptions`에서 이 스킬로 연결
 
 ### Boundary Checks
 - **설계 vs 운영**: HITL은 "어디에 인간이 개입할지를 설계"하는 것이지, 실제로 인간을 배치하거나 모니터링 대시보드를 만드는 것은 아님 — 구현은 팀이 담당
@@ -146,13 +145,13 @@ Level 5: Full Autonomous  — 에이전트가 판단 + 실행 + 모니터링 전
 
 ### 사용 방법
 
-`/human-in-loop-design [에이전트 이름 또는 워크플로우]`
+`$hitl`을 에이전트 이름 또는 워크플로우와 함께 호출한다.
 
 ---
 
 ### Instructions
 
-You are helping design **Human-in-the-Loop controls** for: **$ARGUMENTS**
+You are helping design **Human-in-the-Loop controls** for: 사용자가 설계하려는 에이전트 워크플로우.
 
 **Step 1 — 작업 목록 작성**
 에이전트가 수행하는 모든 작업을 나열한다
@@ -167,7 +166,7 @@ You are helping design **Human-in-the-Loop controls** for: **$ARGUMENTS**
 - 반복 실행 → Periodic Audit
 - 다단계 복잡 작업 → Escalation Chain
 
-💡 **아키텍처 참고**: Supervisor → 조건부 분기 → HITL 패턴은 !domain에서 상세 설명합니다. 위험도별 차등 적용, SLA 설정, 자동 에스컬레이션 등의 실무 구현 사례를 확인하세요.
+💡 **아키텍처 참고**: Supervisor → 조건부 분기 → HITL 패턴 구성에서 위험도별 차등 적용, SLA 설정, 자동 에스컬레이션 등의 실무 구현 사례를 함께 고려한다.
 
 **Step 4 — 개입 트리거 정의**
 각 개입 지점의 구체적 조건:
@@ -182,8 +181,8 @@ You are helping design **Human-in-the-Loop controls** for: **$ARGUMENTS**
 모든 항목이 완료됐는지 검증
 
 **Step 7 — 다음 단계 연결**
-- `/agent-instruction-design`의 Failure Handling 섹션에 HITL 설계 반영
-- `/agent-prd-template`의 Section 7에 Human-in-the-loop 트리거 명시
+- 에이전트 인스트럭션 설계의 Failure Handling 섹션에 HITL 설계 반영
+- 에이전트 PRD의 Human-in-the-loop 트리거 섹션에 명시
 
 ---
 

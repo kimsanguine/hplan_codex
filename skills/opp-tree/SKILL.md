@@ -1,9 +1,9 @@
 ---
 name: opp-tree
 description: "Analyze where AI agents can add value and which tasks to automate — systematically map repetitive workflows, manual processes, and operational bottlenecks to identify the best agent opportunities. Build an Agent Opportunity Tree from desired outcomes to solvable problems, agent solution candidates, and validation experiments. Use when exploring where AI agents could add value to a platform or service, finding automation opportunities in workflows, identifying repetitive tasks worth automating, prioritizing which agent to build first, or mapping the full opportunity space before committing to development. Applicable to any domain — customer support, edtech, SaaS, operations, and more."
-argument-hint: "[product or domain to explore]"
-tools: ["Read", "Write"]
-model: default
+metadata:
+  short-description: "자동화 기회를 체계적으로 매핑하고 우선순위를 정하는 Agent Opportunity Tree"
+  plugin: discover
 ---
 
 ## Core Goal
@@ -24,12 +24,11 @@ model: default
 
 ### Route to Other Skills When
 - 선택된 기회의 가정(Value/Feasibility/Reliability/Ethics)을 깊이 있게 검증해야 할 때 → `assumptions` 스킬
-- 최우선 기회의 기술 구현 방식(Trigger Agent vs Pipeline Agent vs Research Agent)을 결정해야 할 때 → `build-or-buy` 스킬
+- 최우선 기회의 기술 구현 방식(Trigger Agent vs Pipeline Agent vs Research Agent)을 결정해야 할 때 → `assumptions`의 build-or-buy 모드
 - 선택한 에이전트에 인간 개입 지점을 설계해야 할 때 → `hitl` 스킬
-- Opportunity Tree를 Mermaid + `docs/OPPORTUNITY_TREE.md`로 영구화하고 5/3 strong-Push 패턴으로 검증할 때 → `ost` (hplan plugin)
 
 ### Boundary Checks
-- **범위 확인**: AOT는 "어떤 에이전트를 만들 것인가"를 정하는 것이지, "어떻게 만드는가"를 설명하지 않음 — 구현은 `agent-instruction-design`으로 연결
+- **범위 확인**: AOT는 "어떤 에이전트를 만들 것인가"를 정하는 것이지, "어떻게 만드는가"를 설명하지 않음
 - **판단 의존도 주의**: 점수가 5점을 넘어가거나 판단 의존도가 높다면(4~5점) AOT 대상이 아닐 수 있음 — 그냥 Rule-based 자동화나 인간 처리가 더 나을 수 있음
 
 ---
@@ -123,13 +122,13 @@ AOT는 이 함정을 피하기 위해 **4개 레이어를 순서대로** 탐색�
 
 ### 사용 방법
 
-`/agent-opportunity-tree [자동화하려는 업무 또는 문제]`
+`$opp-tree`를 자동화하려는 업무 또는 문제와 함께 호출한다.
 
 ---
 
 ### Instructions
 
-You are helping to build an **Agent Opportunity Tree** for: **$ARGUMENTS**
+You are helping to build an **Agent Opportunity Tree** for: 사용자가 탐색하려는 제품 또는 도메인.
 
 **Step 1 — Automation Outcome 확정**
 - 측정 가능한 자동화 목표 1개를 명확히 정의한다
@@ -151,7 +150,7 @@ You are helping to build an **Agent Opportunity Tree** for: **$ARGUMENTS**
 
 **Step 5 — 다음 권장 액션**
 - 가장 높은 Opportunity Score + 가장 낮은 구현 난이도 조합을 추천한다
-- `/agent-instruction-design`으로 연결할 준비가 됐는지 확인한다
+- 에이전트 인스트럭션 설계로 연결할 준비가 됐는지 확인한다
 
 ---
 
