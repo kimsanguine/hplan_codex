@@ -46,7 +46,7 @@ hplan (gate)  →  discover  →  architect  →  deliver  →  operate
 
 | Plugin | Question | Key Skills |
 |---|---|---|
-| **hplan** | Should we build this? | brainstorm, evidence-rubric, decision-log, exclusions, ost, interview-synthesis |
+| **hplan** | Should we build this? | brainstorm, evidence-rubric, decision-log, exclusions, ost |
 | **discover** | What problem is real? | socratic-question, opp-tree, assumptions, cost-sim, customer-reach, hitl |
 | **architect** | How should it be designed? | orchestration, memory-arch, design-token, router, strategy |
 | **deliver** | How do we build and ship? | prd, conductor, sprint, roadmap, qa-checklist, stakeholder-update, build-loop |
@@ -81,11 +81,39 @@ $brainstorm → $socratic-question → $opp-tree → $assumptions → $cost-sim 
 
 | Plugin | Skills |
 |---|---|
-| hplan | `$brainstorm` `$evidence-rubric` `$decision-log` `$exclusions` `$ost` `$interview-synthesis` |
+| hplan | `$brainstorm` `$evidence-rubric` `$decision-log` `$exclusions` `$ost` |
 | discover | `$socratic-question` `$opp-tree` `$assumptions` `$cost-sim` `$customer-reach` `$hitl` |
 | architect | `$orchestration` `$memory-arch` `$design-token` `$router` `$strategy` |
 | deliver | `$prd` `$conductor` `$sprint` `$roadmap` `$qa-checklist` `$stakeholder-update` `$build-loop` |
 | operate | `$pm-engine` `$metrics-design` `$ops-review` `$incident` `$portfolio` |
+
+---
+
+## Skill Layout
+
+Each skill lives in its own folder under `skills/`:
+
+```
+skills/
+├── <skill-name>/
+│   └── SKILL.md        ← frontmatter (name + description) + skill body
+└── ...
+```
+
+Codex CLI discovers a skill by its folder name and reads `skills/<name>/SKILL.md`.
+Subagent definitions, when a skill needs them, live alongside the skill (e.g. `skills/<name>/agents/openai.yaml`).
+
+---
+
+## Installation
+
+Install hplan_codex directly from a Codex session:
+
+```
+$skill-installer https://github.com/kimsanguine/hplan_codex
+```
+
+This pulls the skills into your Codex CLI skills directory. See `README.md` for the manual install alternative and harness setup.
 
 ---
 
@@ -106,7 +134,7 @@ your-project/
 │       └── cogs_result.json      ← COGS gate result
 ```
 
-Copy templates from `harness/` directory of this repo to get started.
+Copy templates from the `harness/` directory of this repo to get started.
 
 ---
 
@@ -131,12 +159,12 @@ Score ≥ 60 → `GO`. Score < 60 → `INVESTIGATE` or `HOLD`.
 Every skill in hplan_codex declares what is LLM and what is deterministic.
 Look for the **Determinism Boundary** table in each skill file.
 
-Example from `$ticket-bridge`:
+Example from `$sprint`:
 | Task | Method | Reason |
 |---|---|---|
-| Issue body → task decomposition | LLM | Classification allowed |
-| Label → complexity mapping | Deterministic lookup | No LLM if-statement |
-| Task ↔ issue matching | Deterministic | JSON key lookup |
+| Plan notes → task decomposition | LLM | Classification allowed |
+| Effort label → priority mapping | Deterministic lookup | No LLM if-statement |
+| Task ↔ plan-item matching | Deterministic | JSON key lookup |
 
 ---
 
@@ -157,26 +185,30 @@ Skills use the following tool names compatible with Codex CLI:
 
 ## Configuration
 
-Codex CLI settings for hplan_codex are in `.codex/config.toml`:
-```toml
-[agents]
-max_threads = 6
-max_depth = 2
+Codex CLI reads config from `~/.codex/config.toml` (top-level keys). See `config.toml.example` in this repo:
 
-[project]
-doc_max_bytes = 65536
-doc_fallback_filenames = ["AGENTS.md"]
+```toml
+# Default model (verified slugs: gpt-5.5, gpt-5.4, gpt-5.4-mini, gpt-5.3-codex, gpt-5.2)
+model = "gpt-5.5"
+model_reasoning_effort = "high"
+
+# Trust this project directory
+[projects."/path/to/your-project"]
+trust_level = "trusted"
 ```
 
-Hooks are configured in `.codex/hooks.json`.
+Reasoning depth is controlled by `model_reasoning_effort` (`minimal` / `low` / `medium` / `high`), not by a separate model alias.
+
+Codex CLI 0.130.0 does not support file-based hooks. Background automation, when needed, is driven by Codex automations/rules; `scripts/track-probe.sh` is provided as a manual probe you can invoke directly.
 
 ---
 
 ## Getting Started
 
-1. Copy `harness/` templates to your project
-2. Run `$brainstorm [your idea]` to start
-3. Follow the plugin lifecycle: hplan → discover → architect → deliver → operate
-4. Each gate must pass before moving to the next plugin
+1. Install with `$skill-installer https://github.com/kimsanguine/hplan_codex` (or follow the manual steps in `README.md`)
+2. Copy `harness/` templates to your project
+3. Run `$brainstorm [your idea]` to start
+4. Follow the plugin lifecycle: hplan → discover → architect → deliver → operate
+5. Each gate must pass before moving to the next plugin
 
 > "The most expensive code is code that shouldn't have been written."

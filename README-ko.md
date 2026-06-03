@@ -22,34 +22,55 @@ hplan_codex는 HOW 앞에 **WHETHER 게이트**를 추가합니다:
 
 ---
 
+## 사전 준비: Codex CLI 설치
+
+hplan_codex는 OpenAI Codex CLI 안에서 동작합니다. **먼저 Codex CLI를 설치하세요:**
+
+```bash
+npm install -g @openai/codex
+```
+
+공식 문서 및 다른 설치 방법: https://developers.openai.com/codex
+
+---
+
+## hplan_codex 설치
+
+**권장 — Codex 세션 안에서:**
+
+```
+$skill-installer https://github.com/kimsanguine/hplan_codex
+```
+
+28개 스킬을 Codex CLI 스킬 디렉토리로 가져옵니다.
+
+**수동 대안** (clone + harness 설정):
+
+```bash
+git clone https://github.com/kimsanguine/hplan_codex.git
+cp -r hplan_codex/harness/ ./harness/
+cp hplan_codex/AGENTS.md ./AGENTS.md
+# 선택: config 예시를 전역 Codex 설정으로 복사
+cp hplan_codex/config.toml.example ~/.codex/config.toml   # 이후 값 편집
+```
+
+---
+
 ## 빠른 시작
 
-**5분 체험** (clone 후):
+설치 후, 프로젝트 폴더에서:
+
 ```
 $brainstorm "아이디어"
 ```
 
-**전체 설정** (워크플로우 완전 활용):
-
-**0. hplan_codex 가져오기**
-```bash
-git clone https://github.com/kimsanguine/hplan_codex.git
-cd your-project
-```
-
-1. harness 템플릿 복사:
-   ```bash
-   cp -r ../hplan_codex/harness/ ./harness/
-   cp -r ../hplan_codex/.codex/ ./.codex/
-   cp ../hplan_codex/AGENTS.md ./AGENTS.md
-   ```
-2. 프로젝트 폴더에서 Codex CLI 실행
-3. 시작:
-   ```
-   $brainstorm "아이디어"
-   ```
-
 → 5분 안에 "만들어야 하는가" 판단이 나옵니다.
+
+**전체 워크플로우:**
+
+```
+$brainstorm → $socratic-question → $opp-tree → $prd → $conductor
+```
 
 ---
 
@@ -62,6 +83,22 @@ cd your-project
 | **architect** | 어떻게 설계하는가? | orchestration, memory-arch |
 | **deliver** | 어떻게 만들고 출시하는가? | prd, conductor, sprint |
 | **operate** | 어떻게 지속하는가? | pm-engine, metrics-design |
+
+---
+
+## 보안 & 샌드박스
+
+hplan_codex는 Codex CLI 샌드박스 안에서 실행됩니다. Codex 0.130.0은 세 가지 샌드박스 모드를 지원합니다:
+
+| 모드 | 권한 |
+|---|---|
+| `read-only` | 프로젝트 파일 읽기 전용 — 쓰기·네트워크 불가 |
+| `workspace-write` | 프로젝트 파일 읽기 + 쓰기 + 워크스페이스 내 명령 실행 (기본값) |
+| `danger-full-access` | 전체 읽기/쓰기 + 네트워크 — 태스크를 신뢰할 때만 사용 |
+
+샌드박스 모드는 Codex CLI 세션 또는 설정에서 지정합니다. hplan_codex의 빌드 단계 스킬은 `workspace-write`를 전제로 합니다.
+
+> Codex CLI 0.130.0은 file-based hook을 지원하지 않습니다. `scripts/track-probe.sh`는 직접 실행하거나 Codex automation에 연결할 수 있는 수동 스프린트 추적 프로브로 제공됩니다.
 
 ---
 

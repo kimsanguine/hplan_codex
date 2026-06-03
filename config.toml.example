@@ -1,0 +1,10 @@
+# hplan_codex — Codex CLI config example
+# Copy relevant keys to ~/.codex/config.toml
+
+# Default model (verified slugs: gpt-5.5, gpt-5.4, gpt-5.4-mini, gpt-5.3-codex, gpt-5.2)
+model = "gpt-5.5"
+model_reasoning_effort = "high"
+
+# Trust this project directory
+[projects."/path/to/your-project"]
+trust_level = "trusted"

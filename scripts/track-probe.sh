@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
-# track-probe.sh — PostToolUse hook for sprint tracking
-# Records write events to .track/actual_log.jsonl
-# Codex CLI compatible — no forbidden brand references
+# track-probe.sh — sprint tracking probe
+# Run manually or via Codex automation — file-based PostToolUse hooks are
+# not supported in Codex CLI 0.130.0.
+# Reads a tool-call JSON payload on stdin and appends a write event to
+# .track/actual_log.jsonl. No forbidden brand references.
 
 set -euo pipefail
 
@@ -47,7 +49,7 @@ entry = {
     "tool": tool,
     "file": file_path,
     "loc_delta": loc_delta,
-    "source": "hook",
+    "source": "probe",
 }
 with open(os.path.join(".track", "actual_log.jsonl"), "a") as f:
     f.write(json.dumps(entry, ensure_ascii=False) + "\n")
