@@ -1,0 +1,23 @@
+{
+  "hooks": [
+    {
+      "event": "SessionStart",
+      "description": "hplan_codex session init — load harness context",
+      "command": "bash -c '[ -d harness ] && echo \"harness/ found\" || echo \"harness/ not found — copy templates from hplan_codex/harness/\"'"
+    },
+    {
+      "event": "PostToolUse",
+      "matcher": {
+        "tool_name": ["write_file"],
+        "file_path_pattern": "\\.track/.*\\.jsonl$"
+      },
+      "description": "Track file write events to actual_log.jsonl",
+      "command": "bash .codex/scripts/track-probe.sh"
+    },
+    {
+      "event": "Stop",
+      "description": "Gate validation on stop",
+      "command": "bash -c '[ -f scripts/validate_agents.py ] && python3 scripts/validate_agents.py || true'"
+    }
+  ]
+}
