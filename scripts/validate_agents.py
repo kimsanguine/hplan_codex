@@ -23,9 +23,9 @@ for plugin in PLUGINS:
     for skill_file in skills:
         content = skill_file.read_text()
         # Check no forbidden brand references
-        if "claude" in content.lower():
-            lines = [i+1 for i, l in enumerate(content.splitlines()) if "claude" in l.lower()]
-            errors.append(f"FORBIDDEN: 'claude' found in {skill_file.relative_to(REPO_ROOT)} at lines {lines}")
+        if FORBIDDEN in content.lower():
+            lines = [i+1 for i, l in enumerate(content.splitlines()) if FORBIDDEN in l.lower()]
+            errors.append(f"FORBIDDEN: FORBIDDEN + ' found in' {skill_file.relative_to(REPO_ROOT)} at lines {lines}")
         # Check frontmatter
         if not content.startswith("---"):
             errors.append(f"Missing frontmatter in {skill_file.relative_to(REPO_ROOT)}")
@@ -33,8 +33,8 @@ for plugin in PLUGINS:
 # Check AGENTS.md
 agents_md = REPO_ROOT / "AGENTS.md"
 if agents_md.exists():
-    if "claude" in agents_md.read_text().lower():
-        errors.append("FORBIDDEN: 'claude' found in AGENTS.md")
+    if FORBIDDEN in agents_md.read_text().lower():
+        errors.append("FORBIDDEN: FORBIDDEN + ' found in' AGENTS.md")
 else:
     errors.append("Missing AGENTS.md")
 
@@ -46,3 +46,4 @@ if errors:
     sys.exit(1)
 else:
     print(f"All {skill_count} skills valid. No forbidden references found.")
+
