@@ -2,6 +2,12 @@
 
 ---
 
+## [0.2.1] — 2026-06-03
+
+### Fixed
+- `scripts/setup.sh`: fail loud on required-file download failure. Previously `curl ... || echo skip` neutralized `set -euo pipefail`, so a 404 on a required file (AGENTS.md, harness templates, scripts) printed "skip" and still ended with an "installed" success message (silent partial install). Now required vs optional files are distinguished; any required failure prints the list and exits 1.
+- `scripts/setup.sh`: added unknown-argument guard.
+
 ## [0.2.0] — 2026-06-03
 
 ### Changed
