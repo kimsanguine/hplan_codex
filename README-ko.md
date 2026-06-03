@@ -4,6 +4,10 @@
 
 Codex CLI용 PM Build Gate. AI 에이전트 코딩에 구조화된 의사결정 프레임워크.
 
+[![skills](https://img.shields.io/badge/skills-28-blue)](skills/)
+[![plugins](https://img.shields.io/badge/plugins-5-green)](skills/)
+[![license](https://img.shields.io/badge/license-MIT-lightgrey)](LICENSE)
+
 ---
 
 ## 문제
@@ -20,9 +24,30 @@ hplan_codex는 HOW 앞에 **WHETHER 게이트**를 추가합니다:
 
 ## 빠른 시작
 
+**5분 체험** (clone 후):
 ```
-$brainstorm [아이디어]
+$brainstorm "아이디어"
 ```
+
+**전체 설정** (워크플로우 완전 활용):
+
+**0. hplan_codex 가져오기**
+```bash
+git clone https://github.com/kimsanguine/hplan_codex.git
+cd your-project
+```
+
+1. harness 템플릿 복사:
+   ```bash
+   cp -r ../hplan_codex/harness/ ./harness/
+   cp -r ../hplan_codex/.codex/ ./.codex/
+   cp ../hplan_codex/AGENTS.md ./AGENTS.md
+   ```
+2. 프로젝트 폴더에서 Codex CLI 실행
+3. 시작:
+   ```
+   $brainstorm "아이디어"
+   ```
 
 → 5분 안에 "만들어야 하는가" 판단이 나옵니다.
 
