@@ -1,11 +1,19 @@
 #!/usr/bin/env bash
-# setup.sh — hplan_codex installer
+# setup.sh — hplan_codex harness installer
 # Usage: bash <(curl -fsSL https://raw.githubusercontent.com/kimsanguine/hplan_codex/main/scripts/setup.sh)
 # Or:    bash <(curl -fsSL https://raw.githubusercontent.com/kimsanguine/hplan_codex/main/scripts/setup.sh) --dir=./myproject
+#
+# This copies the harness templates, AGENTS.md, and helper scripts into your
+# project. To install the SKILLS, run the following inside a Codex session
+# (recommended):
+#
+#     $skill-installer https://github.com/kimsanguine/hplan_codex
+#
+# Prerequisite: install Codex CLI first — `npm install -g @openai/codex`
+# (docs: https://developers.openai.com/codex)
 
 set -euo pipefail
 
-REPO_URL="https://github.com/kimsanguine/hplan_codex.git"
 RAW_BASE="https://raw.githubusercontent.com/kimsanguine/hplan_codex/main"
 DEFAULT_TARGET="."
 
@@ -21,12 +29,12 @@ for arg in "$@"; do
   esac
 done
 
-echo "hplan_codex installer"
+echo "hplan_codex harness installer"
 echo "Target: $TARGET_DIR"
 echo ""
 
 # 1) Check dependencies
-for cmd in git curl; do
+for cmd in curl; do
   if ! command -v "$cmd" &>/dev/null; then
     echo "Error: '$cmd' is required but not found." >&2
     exit 1
@@ -49,47 +57,37 @@ HARNESS_FILES=(
 mkdir -p "$TARGET_DIR/harness"
 for f in "${HARNESS_FILES[@]}"; do
   curl -fsSL "$RAW_BASE/harness/$f" -o "$TARGET_DIR/harness/$f" 2>/dev/null && \
-    echo "  ✓ harness/$f" || echo "  ✗ harness/$f (skipped)" >&2
+    echo "  ok harness/$f" || echo "  skip harness/$f" >&2
 done
 
-# 4) Copy .codex/ configuration
-echo "Copying .codex/ configuration..."
-CODEX_FILES=(
-  "config.toml"
-  "hooks.json"
-  "agents/spec-reviewer.toml"
-  "agents/quality-reviewer.toml"
-  "agents/implementer.toml"
-  "scripts/track-probe.sh"
-)
-mkdir -p "$TARGET_DIR/.codex/agents"
-mkdir -p "$TARGET_DIR/.codex/scripts"
-for f in "${CODEX_FILES[@]}"; do
-  curl -fsSL "$RAW_BASE/.codex/$f" -o "$TARGET_DIR/.codex/$f" 2>/dev/null && \
-    echo "  ✓ .codex/$f" || echo "  ✗ .codex/$f (skipped)" >&2
-done
-chmod +x "$TARGET_DIR/.codex/scripts/track-probe.sh" 2>/dev/null || true
-
-# 5) Copy AGENTS.md
+# 4) Copy AGENTS.md
 echo "Copying AGENTS.md..."
 curl -fsSL "$RAW_BASE/AGENTS.md" -o "$TARGET_DIR/AGENTS.md" && \
-  echo "  ✓ AGENTS.md" || echo "  ✗ AGENTS.md (skipped)" >&2
+  echo "  ok AGENTS.md" || echo "  skip AGENTS.md" >&2
+
+# 5) Copy config example
+echo "Copying config.toml.example..."
+curl -fsSL "$RAW_BASE/config.toml.example" -o "$TARGET_DIR/config.toml.example" 2>/dev/null && \
+  echo "  ok config.toml.example" || echo "  skip config.toml.example" >&2
 
 # 6) Copy scripts
 echo "Copying scripts/..."
 mkdir -p "$TARGET_DIR/scripts"
-for f in cogs_sentinel.py validate_agents.py; do
+for f in cogs_sentinel.py validate_agents.py track-probe.sh; do
   curl -fsSL "$RAW_BASE/scripts/$f" -o "$TARGET_DIR/scripts/$f" 2>/dev/null && \
-    echo "  ✓ scripts/$f" || echo "  ✗ scripts/$f (skipped)" >&2
+    echo "  ok scripts/$f" || echo "  skip scripts/$f" >&2
 done
+chmod +x "$TARGET_DIR/scripts/track-probe.sh" 2>/dev/null || true
 
 echo ""
-echo "hplan_codex installed to: $TARGET_DIR"
+echo "hplan_codex harness installed to: $TARGET_DIR"
 echo ""
 echo "Next steps:"
-echo "  1. cd $TARGET_DIR"
-echo "  2. Run Codex CLI in this directory"
-echo "  3. Start: \$brainstorm \"your idea\""
+echo "  1. Install the skills in a Codex session:"
+echo "       \$skill-installer https://github.com/kimsanguine/hplan_codex"
+echo "  2. (optional) Copy config.toml.example keys to ~/.codex/config.toml"
+echo "  3. cd $TARGET_DIR and run Codex CLI in this directory"
+echo "  4. Start: \$brainstorm \"your idea\""
 echo ""
 echo "Full workflow:"
 echo "  \$brainstorm → \$socratic-question → \$opp-tree → \$prd → \$conductor"
