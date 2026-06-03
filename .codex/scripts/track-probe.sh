@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # track-probe.sh — PostToolUse hook for sprint tracking
 # Records write events to .track/actual_log.jsonl
-# No "claude" references — Codex CLI compatible
+# Codex CLI compatible — no forbidden brand references
 
 set -euo pipefail
 
