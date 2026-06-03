@@ -1,0 +1,49 @@
+# Product Requirements Document — [Product Name]
+**Version**: v0.1 | **Date**: YYYY-MM-DD | **Status**: DRAFT
+
+## §1 — Problem Statement
+[Who has what problem, with evidence from pain.md]
+
+## §2 — Target User (ICP)
+[Specific person, role, company size, context]
+
+## §3 — Jobs to Be Done
+[JTBD format: When X, I want Y, so I can Z]
+
+## §4 — Success Metrics
+[Measurable outcomes, not outputs]
+
+## §5 — Scope (Now / Next / Later)
+[What is IN scope for v1]
+
+## §6 — Roadmap
+**Now (0-4 weeks):**
+**Next (4-12 weeks):**
+**Later (12+ weeks):**
+
+## §7 — Anti-Goals
+[What we explicitly will NOT build]
+
+## §8 — Assumptions
+[Assumptions that must be validated before building]
+
+## §9 — Constraints
+[Technical, legal, budget constraints]
+
+## §10 — Dependencies
+[External systems, teams, APIs required]
+
+## §11 — Output Specification
+[What the system produces — format, schema, accuracy requirements]
+
+## §12 — Non-functional Requirements
+[Performance, security, accessibility, i18n]
+
+## §13 — Test Strategy
+[How we verify this works — unit, integration, user testing]
+
+## §14 — Failure Modes
+[What can go wrong and how we handle it]
+
+## §15 — QA Pool
+[Test cases for evidence-rubric scoring]
