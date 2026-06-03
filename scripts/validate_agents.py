@@ -5,6 +5,9 @@ Checks: skill count, no forbidden strings, frontmatter format
 """
 import os, pathlib, sys
 
+# Forbidden brand reference — split to avoid self-detection
+FORBIDDEN = "clau" + "de"
+
 REPO_ROOT = pathlib.Path(__file__).parent.parent
 SKILLS_DIR = REPO_ROOT / "skills"
 
@@ -25,7 +28,7 @@ for plugin in PLUGINS:
         # Check no forbidden brand references
         if FORBIDDEN in content.lower():
             lines = [i+1 for i, l in enumerate(content.splitlines()) if FORBIDDEN in l.lower()]
-            errors.append(f"FORBIDDEN: FORBIDDEN + ' found in' {skill_file.relative_to(REPO_ROOT)} at lines {lines}")
+            errors.append(f"FORBIDDEN: {FORBIDDEN} found in {skill_file.relative_to(REPO_ROOT)} at lines {lines}")
         # Check frontmatter
         if not content.startswith("---"):
             errors.append(f"Missing frontmatter in {skill_file.relative_to(REPO_ROOT)}")
@@ -34,7 +37,7 @@ for plugin in PLUGINS:
 agents_md = REPO_ROOT / "AGENTS.md"
 if agents_md.exists():
     if FORBIDDEN in agents_md.read_text().lower():
-        errors.append("FORBIDDEN: FORBIDDEN + ' found in' AGENTS.md")
+        errors.append(f"FORBIDDEN: {FORBIDDEN} found in AGENTS.md")
 else:
     errors.append("Missing AGENTS.md")
 
