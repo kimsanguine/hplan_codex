@@ -1,0 +1,31 @@
+# COGS Estimate
+
+> Cost of Goods Sold analysis before building.
+> Required for Signal Gate pass.
+
+## Product Description
+[What the AI agent does in one sentence]
+
+## Usage Assumptions
+- Monthly active users (MAU): ___
+- API calls per user per month: ___
+- Tokens per call (input/output): ___ / ___
+- Model: ___
+
+## Cost Calculation
+| Scenario | MAU | Cost/user/month | Total/month |
+|---|---|---|---|
+| Conservative | 100 | $___ | $___ |
+| Base case | 1,000 | $___ | $___ |
+| Optimistic | 10,000 | $___ | $___ |
+
+## Revenue Assumption
+- Price per user/month: $___
+- Gross margin target: ___%
+
+## Verdict
+- [ ] GREEN — margin positive at base case
+- [ ] CONDITIONAL_GO — positive at optimistic only
+- [ ] RED — negative even at optimistic
+
+> Run `python3 scripts/cogs_sentinel.py` for automated calculation.
