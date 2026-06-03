@@ -1,9 +1,9 @@
 ---
 name: portfolio
 description: "에이전트 포트폴리오 관리 — 단일 에이전트 추적(agent-portfolio)과 포트폴리오 전체 리포트(portfolio-report) 통합. 에이전트 상태 카드, 크로스-에이전트 비용 비교, 포트폴리오 헬스 스코어. Use when managing multiple deployed agents."
-argument-hint: "[--mode single|report|health]"
-tools: ["Read", "Write", "write_file"]
-model: default
+metadata:
+  short-description: 에이전트 포트폴리오 관리 — T1~T5 티어링·5축 스코어카드·헬스 스코어
+  plugin: operate
 ---
 
 # Portfolio
@@ -23,9 +23,9 @@ model: default
 
 ### Use This Skill When
 
-- 단일 에이전트의 현재 상태 카드가 필요할 때 (`--mode single`)
-- 포트폴리오 전체 5축 스코어카드 또는 주간 롤업이 필요할 때 (`--mode report`)
-- 포트폴리오 전반의 헬스 스코어와 운영 주의력 분배가 필요할 때 (`--mode health`)
+- 단일 에이전트의 현재 상태 카드가 필요할 때 (단일 에이전트 모드)
+- 포트폴리오 전체 5축 스코어카드 또는 주간 롤업이 필요할 때 (리포트 모드)
+- 포트폴리오 전반의 헬스 스코어와 운영 주의력 분배가 필요할 때 (헬스 모드)
 - 운영 중인 에이전트가 5개를 넘어서 단일 에이전트 KPI 뷰로는 우선순위가 안 보일 때
 - 분기/월간 포트폴리오 리뷰 미팅 준비할 때
 - 예산 삭감 요구가 와서 어떤 에이전트를 sunset 할지 결정할 때
@@ -34,7 +34,7 @@ model: default
 
 - 개별 에이전트 KPI 정의가 우선이면 → `metrics-design`
 - 신뢰도 SLO 설계는 → `reliability`
-- 비용 단독 분석이 우선일 때 → `ops-review --mode cost`
+- 비용 단독 분석이 우선일 때 → `ops-review` (비용 리뷰)
 - 이상치 에이전트에 대한 깊은 장애 분석이 필요할 때 → `incident`
 
 ### Boundary Checks
@@ -74,17 +74,17 @@ model: default
 
 ## Instructions
 
-You are managing the portfolio for: **$ARGUMENTS**
+You are managing the portfolio the user names.
 
-Parse `--mode` from the arguments:
-- `--mode single` → Run Single Agent Status Card only
-- `--mode report` → Run Portfolio Report (Scorecard or Rollup)
-- `--mode health` → Run Portfolio Health + Tier distribution
-- no `--mode` flag → Default to `--mode health`
+사용자가 어떤 뷰를 원하는지 자연어로 파악한다:
+- "단일 에이전트 상태" → Run Single Agent Status Card only
+- "포트폴리오 리포트" → Run Portfolio Report (Scorecard or Rollup)
+- "포트폴리오 헬스" → Run Portfolio Health + Tier distribution
+- 별도 지정이 없으면 → Default to Portfolio Health
 
 ---
 
-### Single Agent Status Card (`--mode single`)
+### Single Agent Status Card (단일 에이전트 모드)
 
 **Step 1** — 에이전트 기본 정보
 - 이름, 담당팀, 활성 여부, 마지막 실행일
@@ -109,9 +109,9 @@ Parse `--mode` from the arguments:
 
 ---
 
-### Portfolio Report (`--mode report`)
+### Portfolio Report (리포트 모드)
 
-**R1 — 스코어카드 (`--view scorecard`)**
+**R1 — 스코어카드 (스코어카드 뷰)**
 
 에이전트별 5축 점수 산출 및 가중 합산:
 ```
@@ -165,7 +165,7 @@ Top 하락: [agent] -[N], [agent] -[N], [agent] -[N]
 
 ---
 
-### Portfolio Health (`--mode health`)
+### Portfolio Health (헬스 모드)
 
 **H1 — 인벤토리**
 
@@ -199,7 +199,7 @@ Top 하락: [agent] -[N], [agent] -[N], [agent] -[N]
 | 티어 부여 근거가 추상적 ("중요해서 T1") | Step H2 출력 점검 | 사업 영향 수치(매출/비용/사용자 수)로 재정의 |
 | T1이 50% 초과 | Step H3 백분율 점검 | 진짜 T1인지 재검토 — 통상 T1은 ≤ 20% |
 | 가중치 합이 100이 아님 | R1 스코어카드 검증 | 자동 정규화 + 사용자 확인 요청 |
-| 입력 데이터 없음 | 롤업 시 scorecard 산출물 부재 | `--mode report --view scorecard`를 먼저 실행 안내 |
+| 입력 데이터 없음 | 롤업 시 scorecard 산출물 부재 | 리포트 모드의 스코어카드 뷰를 먼저 실행하도록 안내 |
 | sunset 후보가 T5에 안 모임 | T5가 비어있음 | 사용 빈도 < 월 1회인 에이전트 명시 → T5 분류 |
 | Accuracy LLM-as-judge bias | 평가 대상과 같은 모델 패밀리로 자기 채점 | 채점 모델을 다른 패밀리로 변경 |
 
@@ -227,7 +227,7 @@ Top 하락: [agent] -[N], [agent] -[N], [agent] -[N]
 
 ## Examples
 
-### Good Example — `--mode health`
+### Good Example — 헬스 모드
 
 ```
 입력: "운영 중인 에이전트 N개, 여러 팀. 포트폴리오 헬스 확인해줘."
@@ -245,7 +245,7 @@ Top 하락: [agent] -[N], [agent] -[N], [agent] -[N]
 3. T5 legacy-summarizer — sunset 결정 필요
 ```
 
-### Good Example — `--mode report` (rollup)
+### Good Example — 리포트 모드 (rollup)
 
 ```
 입력: "2026-W19 포트폴리오 리포트 만들어줘."

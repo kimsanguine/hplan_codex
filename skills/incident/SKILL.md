@@ -1,9 +1,9 @@
 ---
 name: incident
 description: "Respond to and learn from AI agent incidents — triage severity, coordinate response, contain blast radius, and write postmortems. Use when an agent produces harmful outputs, costs spike unexpectedly, accuracy drops suddenly, or users report critical failures."
-argument-hint: "[incident description or agent name]"
-tools: ["Read", "Write"]
-model: default
+metadata:
+  short-description: 에이전트 장애 대응 — 심각도 분류·대응·블래스트 반경·포스트모템
+  plugin: operate
 ---
 
 # Agent Incident Response
@@ -49,7 +49,7 @@ model: default
 
 ## Instructions
 
-You are running **incident response** for: **$ARGUMENTS**
+You are running **incident response** for the incident or agent the user describes.
 
 ### Step 1 — Incident Detection & Classification
 
