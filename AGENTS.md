@@ -11,7 +11,7 @@
 hplan_codex is a PM Build Gate system for Codex CLI.
 It gives AI coding agents a structured decision-making framework — preventing you from building the wrong thing.
 
-**5 plugins · 26 skills · AGENTS.md based**
+**5 plugins · 28 skills · AGENTS.md based**
 
 ---
 
@@ -46,11 +46,11 @@ hplan (gate)  →  discover  →  architect  →  deliver  →  operate
 
 | Plugin | Question | Key Skills |
 |---|---|---|
-| **hplan** | Should we build this? | brainstorm, evidence-rubric, decision-log |
-| **discover** | What problem is real? | socratic-question, opp-tree, assumptions, cost-sim |
-| **architect** | How should it be designed? | orchestration, memory-arch, router |
-| **deliver** | How do we build and ship? | prd, conductor, sprint, roadmap |
-| **operate** | How do we sustain it? | pm-engine, metrics-design, ops-review |
+| **hplan** | Should we build this? | brainstorm, evidence-rubric, decision-log, exclusions, ost, interview-synthesis |
+| **discover** | What problem is real? | socratic-question, opp-tree, assumptions, cost-sim, customer-reach, hitl |
+| **architect** | How should it be designed? | orchestration, memory-arch, design-token, router, strategy |
+| **deliver** | How do we build and ship? | prd, conductor, sprint, roadmap, qa-checklist, stakeholder-update, build-loop |
+| **operate** | How do we sustain it? | pm-engine, metrics-design, ops-review, incident, portfolio |
 
 ---
 
@@ -76,6 +76,16 @@ $prd [feature or product]
 ```
 $brainstorm → $socratic-question → $opp-tree → $assumptions → $cost-sim → $prd → $conductor
 ```
+
+### All 28 Skills
+
+| Plugin | Skills |
+|---|---|
+| hplan | `$brainstorm` `$evidence-rubric` `$decision-log` `$exclusions` `$ost` `$interview-synthesis` |
+| discover | `$socratic-question` `$opp-tree` `$assumptions` `$cost-sim` `$customer-reach` `$hitl` |
+| architect | `$orchestration` `$memory-arch` `$design-token` `$router` `$strategy` |
+| deliver | `$prd` `$conductor` `$sprint` `$roadmap` `$qa-checklist` `$stakeholder-update` `$build-loop` |
+| operate | `$pm-engine` `$metrics-design` `$ops-review` `$incident` `$portfolio` |
 
 ---
 
