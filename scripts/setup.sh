@@ -15,9 +15,8 @@
 set -euo pipefail
 
 RAW_BASE="https://raw.githubusercontent.com/kimsanguine/hplan_codex/main"
-DEFAULT_TARGET="."
+TARGET_DIR="."
 
-TARGET_DIR="${1:-$DEFAULT_TARGET}"
 for arg in "$@"; do
   case "$arg" in
     --dir=*) TARGET_DIR="${arg#--dir=}" ;;
@@ -25,6 +24,11 @@ for arg in "$@"; do
       echo "Usage: bash setup.sh [--dir=<target-project-dir>]"
       echo "  --dir  Target project directory (default: current directory)"
       exit 0
+      ;;
+    *)
+      echo "Unknown option: $arg" >&2
+      echo "Run with --help for usage." >&2
+      exit 1
       ;;
   esac
 done
@@ -34,52 +38,70 @@ echo "Target: $TARGET_DIR"
 echo ""
 
 # 1) Check dependencies
-for cmd in curl; do
-  if ! command -v "$cmd" &>/dev/null; then
-    echo "Error: '$cmd' is required but not found." >&2
-    exit 1
-  fi
-done
+if ! command -v curl &>/dev/null; then
+  echo "Error: 'curl' is required but not found." >&2
+  exit 1
+fi
 
 # 2) Create target directory if needed
 mkdir -p "$TARGET_DIR"
 
-# 3) Copy harness templates
+# Track failures. Required-file failures are fatal; optional ones only warn.
+FAILED_REQUIRED=()
+FAILED_OPTIONAL=()
+
+# fetch <url-suffix> <dest> <required|optional>
+fetch() {
+  local suffix="$1" dest="$2" level="$3"
+  if curl -fsSL "$RAW_BASE/$suffix" -o "$dest" 2>/dev/null; then
+    echo "  ok  $suffix"
+  else
+    if [ "$level" = "required" ]; then
+      echo "  FAIL (required) $suffix" >&2
+      FAILED_REQUIRED+=("$suffix")
+    else
+      echo "  skip (optional) $suffix" >&2
+      FAILED_OPTIONAL+=("$suffix")
+    fi
+  fi
+}
+
+# 3) Copy harness templates (required — they are the gate inputs)
 echo "Copying harness/ templates..."
-HARNESS_FILES=(
-  "PRD.md.template"
-  "pain.md.template"
-  "brainstorm-assumptions.md.template"
-  "cogs.md.template"
-  "market.md.template"
-  "competitors.md.template"
-)
 mkdir -p "$TARGET_DIR/harness"
-for f in "${HARNESS_FILES[@]}"; do
-  curl -fsSL "$RAW_BASE/harness/$f" -o "$TARGET_DIR/harness/$f" 2>/dev/null && \
-    echo "  ok harness/$f" || echo "  skip harness/$f" >&2
+for f in PRD.md.template pain.md.template brainstorm-assumptions.md.template \
+         cogs.md.template market.md.template competitors.md.template; do
+  fetch "harness/$f" "$TARGET_DIR/harness/$f" required
 done
 
-# 4) Copy AGENTS.md
+# 4) Copy AGENTS.md (required — entry point)
 echo "Copying AGENTS.md..."
-curl -fsSL "$RAW_BASE/AGENTS.md" -o "$TARGET_DIR/AGENTS.md" && \
-  echo "  ok AGENTS.md" || echo "  skip AGENTS.md" >&2
+fetch "AGENTS.md" "$TARGET_DIR/AGENTS.md" required
 
-# 5) Copy config example
+# 5) Copy config example (optional)
 echo "Copying config.toml.example..."
-curl -fsSL "$RAW_BASE/config.toml.example" -o "$TARGET_DIR/config.toml.example" 2>/dev/null && \
-  echo "  ok config.toml.example" || echo "  skip config.toml.example" >&2
+fetch "config.toml.example" "$TARGET_DIR/config.toml.example" optional
 
-# 6) Copy scripts
+# 6) Copy scripts (required)
 echo "Copying scripts/..."
 mkdir -p "$TARGET_DIR/scripts"
 for f in cogs_sentinel.py validate_agents.py track-probe.sh; do
-  curl -fsSL "$RAW_BASE/scripts/$f" -o "$TARGET_DIR/scripts/$f" 2>/dev/null && \
-    echo "  ok scripts/$f" || echo "  skip scripts/$f" >&2
+  fetch "scripts/$f" "$TARGET_DIR/scripts/$f" required
 done
 chmod +x "$TARGET_DIR/scripts/track-probe.sh" 2>/dev/null || true
 
+# 7) Fail loud on required-file failures (no false "installed" success)
 echo ""
+if [ "${#FAILED_REQUIRED[@]}" -gt 0 ]; then
+  echo "ERROR: ${#FAILED_REQUIRED[@]} required file(s) failed to download:" >&2
+  for f in "${FAILED_REQUIRED[@]}"; do echo "  - $f" >&2; done
+  echo "Install is INCOMPLETE. Check your network/branch and re-run." >&2
+  exit 1
+fi
+if [ "${#FAILED_OPTIONAL[@]}" -gt 0 ]; then
+  echo "Note: ${#FAILED_OPTIONAL[@]} optional file(s) skipped: ${FAILED_OPTIONAL[*]}"
+fi
+
 echo "hplan_codex harness installed to: $TARGET_DIR"
 echo ""
 echo "Next steps:"
@@ -90,4 +112,4 @@ echo "  3. cd $TARGET_DIR and run Codex CLI in this directory"
 echo "  4. Start: \$brainstorm \"your idea\""
 echo ""
 echo "Full workflow:"
-echo "  \$brainstorm → \$socratic-question → \$opp-tree → \$prd → \$conductor"
+echo "  \$brainstorm -> \$socratic-question -> \$opp-tree -> \$prd -> \$conductor"
