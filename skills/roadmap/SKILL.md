@@ -1,9 +1,9 @@
 ---
 name: roadmap
 description: "PRD §6(Now/Next/Later) 기반 로드맵 자동 생성 + RICE 우선순위화. --mode generate(Mermaid gantt + ROADMAP.md), --mode rice(백로그 RICE 점수 계산), --mode prioritize(Now/Next/Later 재분류). Use when a PM needs to visualize the roadmap or prioritize backlog items."
-argument-hint: "[--mode generate|rice|prioritize]"
-tools: ["Read", "Write"]
-model: default
+metadata:
+  short-description: "PRD §6 기반 로드맵 생성 + RICE 우선순위화"
+  plugin: deliver
 ---
 
 ## Core Goal
@@ -47,7 +47,7 @@ Effort: 사람-주(person-week) 단위
 4. docs/ROADMAP.md 저장 (기존 파일 있으면 diff 기반 업데이트 제안)
 
 ### mode: rice
-1. 백로그 항목 파싱 (harness/backlog.md 또는 $ARGUMENTS)
+1. 백로그 항목 파싱 (harness/backlog.md 또는 입력 인자)
 2. 각 항목에 대해 Reach/Impact/Confidence/Effort를 PM에게 물어봄 (AskUserQuestion)
 3. RICE 점수 공식으로 계산 (결정론)
 4. docs/rice-scores.md 저장

@@ -1,0 +1,10 @@
+interface:
+  display_name: "Stakeholder Update"
+  short_description: "Generate exec/team/partner updates and publish to Notion"
+  default_prompt: "Generate a stakeholder update from harness progress and decision logs."
+
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "notion"
+      description: "Notion MCP server for PRD publish"

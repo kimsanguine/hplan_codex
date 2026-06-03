@@ -1,13 +1,9 @@
 ---
 name: prd
 description: "Write a complete unified PRD covering user/JTBD/decisions/scope/agent-spec/metrics/hypotheses in 15 sections. Single source of truth for both customer-facing products and the LLM agents inside them. Replaces the older 7-section agent-only template. --mode design-shotgun reads §1+§11 from existing PRD and generates harness/design-variants/ (4 HTML variants + comparison.md)."
-argument-hint: "[product or agent name] | --mode design-shotgun"
-tools: ["Read", "Write"]
-model: default
-hooks:
-  Stop:
-    - type: command
-      command: "bash scripts/validate-prd.sh . 2>/dev/null || true"
+metadata:
+  short-description: "고객 제품 + 내부 에이전트 통합 15-section PRD 작성"
+  plugin: deliver
 ---
 
 ## Project Context (auto-injected)
@@ -43,19 +39,19 @@ hooks:
 
 ### Route to Other Skills When
 
-- **배포 전 QA 라운드** → `deliver/qa-checklist --mode adversarial` (PRD §15 QA Pool + PERSONA_SPECS 기반 동적 에이전트 구성)
-- **ICP·beachhead 정의** → `discover/agent-gtm` [예정]으로 라우팅 후 Section 1에 주입
-- **JTBD·Switch Interview** → `discover/agent-gtm` [예정]으로 라우팅 후 Section 2에 주입
-- **결정 옵션 매트릭스** → `discover/build-or-buy` [예정] (6축) + `architect/orchestration` (4패턴) + `discover/hitl` (5레벨) → Section 4
-- **제외사항 자동 인용** → `hplan/exclusions` 레지스트리 fuzzy match → Section 5
-- **MVP 비용 시뮬레이션** → `discover/cost-sim` (lognormal p50/p90) → Section 6
-- **Instruction 7요소 상세 설계** → `deliver/instruction` [예정] → Section 7 보강
-- **OKR 정의** → `operate/metrics-design --step okr` (dual-axis) → Section 12
-- **가설 분해** → `discover/assumptions` (4축) → Section 13
-- **신뢰성·SLO** → `operate/reliability` → Section 14
-- **Multi-ecosystem export** → `hplan/handoff` (Spec-Kit / Kiro / GStack / Codex CLI)
-- **사용자 인터페이스가 있는 LLM 에이전트 (UI/UX 강제)** → `deliver/respect --mode brief` (RESPECT.md 디자인 시그니처) → Section 11 출력 사양 보강
-- design-shotgun 변형 선택 후 TC 자동 생성 → `deliver/qa-checklist`
+- **배포 전 QA 라운드** → `$qa-checklist --mode adversarial` (PRD §15 QA Pool + PERSONA_SPECS 기반 동적 에이전트 구성)
+- **ICP·beachhead 정의** → `$agent-gtm` [예정]으로 라우팅 후 Section 1에 주입
+- **JTBD·Switch Interview** → `$agent-gtm` [예정]으로 라우팅 후 Section 2에 주입
+- **결정 옵션 매트릭스** → `$build-or-buy` [예정] (6축) + `$orchestration` (4패턴) + `$hitl` (5레벨) → Section 4
+- **제외사항 자동 인용** → `$exclusions` 레지스트리 fuzzy match → Section 5
+- **MVP 비용 시뮬레이션** → `$cost-sim` (lognormal p50/p90) → Section 6
+- **Instruction 7요소 상세 설계** → `$instruction` [예정] → Section 7 보강
+- **OKR 정의** → `$metrics-design --step okr` (dual-axis) → Section 12
+- **가설 분해** → `$assumptions` (4축) → Section 13
+- **신뢰성·SLO** → `$reliability` → Section 14
+- **Multi-ecosystem export** → `$handoff` (Spec-Kit / Kiro / GStack / Codex CLI)
+- **사용자 인터페이스가 있는 LLM 에이전트 (UI/UX 강제)** → `$respect --mode brief` (RESPECT.md 디자인 시그니처) → Section 11 출력 사양 보강
+- design-shotgun 변형 선택 후 TC 자동 생성 → `$qa-checklist`
 
 ### Boundary Checks
 
@@ -63,7 +59,7 @@ hooks:
 - 각 섹션은 "5명 사랑 인터뷰에 그대로 쓸 수 있는가? + 엔지니어가 이것만으로 구현 가능한가?" 두 기준으로 검증
 - 제외사항(Section 5)이 최소 5개 이상 — "의식적으로 안 만드는 것" 명시
 - Section 7-11 (에이전트 사양)은 1인 빌더가 LLM 에이전트를 포함하지 않으면 "N/A — 일반 SaaS"로 간단 표기 가능
-- `--mode design-shotgun` 사용 시 `docs/PRD.md` 부재 → fail loud: "docs/PRD.md 없음. /prd [제품명] 먼저 실행하세요."
+- `--mode design-shotgun` 사용 시 `docs/PRD.md` 부재 → fail loud: "docs/PRD.md 없음. $prd [제품명] 먼저 실행하세요."
 - `--mode design-shotgun` 사용 시 §11 섹션 부재 → fail loud: "PRD §11 Output Specification 섹션이 필요합니다."
 
 ---
@@ -72,19 +68,19 @@ hooks:
 
 | 실패 상황 | 감지 | 대응 |
 |----------|------|------|
-| ICP가 "20-50대 일반인" 같이 추상적 | Section 1 검토 시 beachhead 5-criteria 통과 못 함 | `discover/agent-gtm` 라우팅으로 ICP 재정의 |
+| ICP가 "20-50대 일반인" 같이 추상적 | Section 1 검토 시 beachhead 5-criteria 통과 못 함 | `$agent-gtm` 라우팅으로 ICP 재정의 |
 | JTBD가 솔루션 어조 ("편하게 X 할 수 있다") | Section 2가 Job이 아닌 Feature 설명 | Switch Interview 4 Forces (Push·Pull·Anxiety·Habit)로 재작성 |
-| 결정 옵션 매트릭스가 옵션 1개만 | Section 4에 옵션 A/B/C 중 하나만 | 최소 2개 옵션 + 트레이드오프 강제. `discover/build-or-buy` [예정] 호출 |
-| 제외사항 비어 있음 | Section 5 빈 칸 | "절대 안 만드는 것 5개" 강제 입력. `hplan/exclusions` 자동 인용 |
+| 결정 옵션 매트릭스가 옵션 1개만 | Section 4에 옵션 A/B/C 중 하나만 | 최소 2개 옵션 + 트레이드오프 강제. `$build-or-buy` [예정] 호출 |
+| 제외사항 비어 있음 | Section 5 빈 칸 | "절대 안 만드는 것 5개" 강제 입력. `$exclusions` 자동 인용 |
 | MVP·Full vision 분리 없음 | Section 6에 Now/Next/Later 구분 없음 | 3-tier 분할 + 각 tier에 cogs p50/p90 첨부 |
 | Anti-Goals 없음 | Section 7에 "하면 안 되는 것" 없음 | 최소 3개 강제. 도메인 룰·hallucination 정책·법적 책임 영역 포함 |
-| Tools 호출 제한 없음 | Section 8 일부 행에 "호출 제한" 컬럼 빈 칸 | `deliver/instruction` [예정] 라우팅으로 도구별 상세 조건 정의 |
+| Tools 호출 제한 없음 | Section 8 일부 행에 "호출 제한" 컬럼 빈 칸 | `$instruction` [예정] 라우팅으로 도구별 상세 조건 정의 |
 | Trigger 모호 ("필요 시") | Section 10 트리거 유형 미지정 | Cron/Event/Manual/Pipeline 중 명시적 선택 |
 | Output 예시 없음 | Section 11 출력 샘플 칸 빈 칸 | 실제 출력 1개 작성 강제 (Markdown / JSON / Plain text) |
-| 성공 지표가 추정·동기 부재 | Section 12에 측정·기한 없음 | `operate/metrics-design --step okr` 라우팅으로 Dual-axis 재작성 |
-| 검증 가능 가설 없음 | Section 13에 가설 0개 | `discover/assumptions`로 top-3 + 2-day experiment 강제 |
+| 성공 지표가 추정·동기 부재 | Section 12에 측정·기한 없음 | `$metrics-design --step okr` 라우팅으로 Dual-axis 재작성 |
+| 검증 가능 가설 없음 | Section 13에 가설 0개 | `$assumptions`로 top-3 + 2-day experiment 강제 |
 | HITL 트리거 모호 | Section 14에 "사용자 확인" 같이 추상 | 구체적 임계값·이벤트로 재정의 (예: 충실성 < 0.7) |
-| `docs/PRD.md` 부재 (`--mode design-shotgun`) | `ls` 실패 | fail loud + "/prd 먼저" 후 종료 |
+| `docs/PRD.md` 부재 (`--mode design-shotgun`) | `ls` 실패 | fail loud + "$prd 먼저" 후 종료 |
 | §11 부재 (`--mode design-shotgun`) | 섹션 추출 없음 | fail loud + "PRD §11 필요" 후 종료 |
 | §1 부재 (`--mode design-shotgun`) | 섹션 추출 없음 | WARN + ICP 적합도 평가 생략, 계속 진행 |
 
@@ -106,10 +102,10 @@ hooks:
 - [ ] Section 12: OKR + North Star + Anti-Metric + Cost KR mandatory (Yes/No)
 - [ ] Section 13: Top-3 가설 + 2-day experiment 링크 (Yes/No)
 - [ ] Section 14: 실패 시나리오 (4개 이상) + HITL 트리거 (Yes/No)
-- [ ] 디자인 시그니처 commit: UI/UX 있으면 `deliver/respect --mode brief` 호출 + RESPECT.md 참조, 없으면 "N/A — 백엔드만" 명시 (Yes/No/N/A)
+- [ ] 디자인 시그니처 commit: UI/UX 있으면 `$respect --mode brief` 호출 + RESPECT.md 참조, 없으면 "N/A — 백엔드만" 명시 (Yes/No/N/A)
 - [ ] Section 15: QA Pool — 페르소나 소스 명시, 개발 역할 결정론 매핑 근거 포함, `harness/QA_POOL.json` 저장됨 (Yes/No)
 - [ ] 전체 일관성: 섹션 간 충돌·누락 없음 (Yes/No)
-- [ ] TK 인용: `operate/pm-engine` 쿼리로 관련 TK-NNN 3~5개 (Yes/No)
+- [ ] TK 인용: `$pm-engine` 쿼리로 관련 TK-NNN 3~5개 (Yes/No)
 - [ ] `--mode design-shotgun`: docs/PRD.md 부재 시 즉시 종료
 - [ ] `--mode design-shotgun`: §11 부재 시 즉시 종료
 - [ ] `--mode design-shotgun`: 4개 HTML 변형 + comparison.md 생성됨
@@ -122,7 +118,7 @@ hooks:
 > **상단** = 사람·문제·결정 (Section 1~6) → 비즈니스가 읽음
 > **중단** = 에이전트·실행 사양 (Section 7~11) → 엔지니어가 읽음
 > **하단** = 지표·가설·실패 (Section 12~14) → PM이 매주 갱신
-> **부록** = QA Pool (Section 15) → `deliver/qa-checklist --mode adversarial` 전용
+> **부록** = QA Pool (Section 15) → `$qa-checklist --mode adversarial` 전용
 
 ---
 
@@ -141,7 +137,7 @@ ICP (Ideal Customer Profile):
 - 도달 채널 (verified):
 ```
 
-> 자동 호출: `discover/agent-gtm` [예정] beachhead 5-criteria 결과 inject (부재 시 ICP 1줄 + 페르소나 2~3개 직접 작성)
+> 자동 호출: `$agent-gtm` [예정] beachhead 5-criteria 결과 inject (부재 시 ICP 1줄 + 페르소나 2~3개 직접 작성)
 
 **이해관계자 영향도 매트릭스 (조직 도입 시 선택):**
 
@@ -172,7 +168,7 @@ ICP (Ideal Customer Profile):
 - Habit (기존 습관 관성):
 ```
 
-> 자동 호출: `discover/agent-gtm` [예정] Switch Interview 산출물 (부재 시 Push/Pull/Anxiety/Habit 4 Forces로 1~3개 Job 직접 작성)
+> 자동 호출: `$agent-gtm` [예정] Switch Interview 산출물 (부재 시 Push/Pull/Anxiety/Habit 4 Forces로 1~3개 Job 직접 작성)
 
 ---
 
@@ -204,7 +200,7 @@ ICP (Ideal Customer Profile):
 | HITL 레벨 | L2 (suggest) | L3 (approve) | L4 (autonomous) | L3 | 안전성 vs 속도 | 5명 사랑 후 |
 ```
 
-> 자동 호출: `discover/build-or-buy` [예정] + `architect/orchestration` + `discover/hitl`
+> 자동 호출: `$build-or-buy` [예정] + `$orchestration` + `$hitl`
 
 ---
 
@@ -223,7 +219,7 @@ ICP (Ideal Customer Profile):
 - [언제 이 제외 결정을 다시 볼 것인가]
 ```
 
-> 자동 호출: `hplan/exclusions` 레지스트리 fuzzy match top-10
+> 자동 호출: `$exclusions` 레지스트리 fuzzy match top-10
 
 ---
 
@@ -245,7 +241,7 @@ ICP (Ideal Customer Profile):
 - cogs (p50): $___ / 사용자 / 월
 ```
 
-> 자동 호출: `discover/cost-sim` (p50/p90 lognormal)
+> 자동 호출: `$cost-sim` (p50/p90 lognormal)
 
 ---
 
@@ -270,7 +266,7 @@ Anti-Goals (하면 안 되는 것, 최소 3개):
 3. [법적 책임 — 예: 의료 진단 대체 금지]
 ```
 
-> 자동 호출: `deliver/instruction` [예정] 7요소 상세 설계 (부재 시 Anti-Goals 3개 직접 작성)
+> 자동 호출: `$instruction` [예정] 7요소 상세 설계 (부재 시 Anti-Goals 3개 직접 작성)
 
 ---
 
@@ -384,7 +380,7 @@ Anti-Metric (이 지표가 오르면 위험):
 [예: 평균 세션 시간이 30분 넘으면 사용자가 길을 잃은 것]
 ```
 
-> 자동 호출: `operate/metrics-design --step okr` (dual-axis)
+> 자동 호출: `$metrics-design --step okr` (dual-axis)
 
 ---
 
@@ -407,7 +403,7 @@ Top-3 가설 (Value/Feasibility/Reliability/Ethics 4축):
 ...
 ```
 
-> 자동 호출: `discover/assumptions` (4축 분해 + 2-day experiment)
+> 자동 호출: `$assumptions` (4축 분해 + 2-day experiment)
 
 ---
 
@@ -433,10 +429,10 @@ Human-in-the-loop 트리거:
 
 ### Section 15 — QA Pool (배포 전 검수 에이전트 구성)
 
-> 이 섹션은 PRD 작성 시 자동 생성. `qa-checklist --mode adversarial` 실행 전 필수.
+> 이 섹션은 PRD 작성 시 자동 생성. `$qa-checklist --mode adversarial` 실행 전 필수.
 > **결정론 원칙**: 역할 선택은 아래 매핑 테이블 기반 — LLM 임의 판단 금지.
 
-> ⚠️ `interview_evidence_verified: false`인 QA_POOL.json으로 QA 라운드를 실행하면, 페르소나 기반 검증이 누락된 상태입니다. `interview-synthesis audit`을 먼저 완료하세요.
+> ⚠️ `interview_evidence_verified: false`인 QA_POOL.json으로 QA 라운드를 실행하면, 페르소나 기반 검증이 누락된 상태입니다. `$interview-synthesis audit`을 먼저 완료하세요.
 
 ```
 QA Pool 구성 규칙:
@@ -542,7 +538,7 @@ ls docs/PRD.md 2>/dev/null || echo "PRD_MISSING"
 PRD_MISSING 시:
 ```
 ❌ 에러: docs/PRD.md 없음.
-/prd [제품명] 먼저 실행하세요.
+$prd [제품명] 먼저 실행하세요.
 ```
 즉시 종료.
 
@@ -563,7 +559,7 @@ grep -in "^#\+.*\(section 11\|§11\|11 —\|11\.\)" docs/PRD.md | head -3
 
 §1도 동일하게 grep으로 확인:
 ```bash
-grep -in "^#\+.*\(section 1\|§1\|1 —\|1\.\)" docs/PRD.md | head -3
+grep -in "^#\+.*\(section 1\|§1\|1 —\|1\.\)" docs/PRD.md | head -3
 ```
 §1 매칭 0건 → WARN (FAIL 아님): "§1 없이 ICP 적합도 평가 생략"
 
@@ -630,8 +626,8 @@ mkdir -p harness/design-variants
 [ICP 기준으로 가장 적합한 변형 + 이유 2-3줄]
 
 ## 다음 단계
-1. 변형 선택 후 → `deliver/qa-checklist` 로 해당 변형 TC 생성
-2. TC 생성 후 → `deliver/ui-validate --check tc-gate [URL]` 로 증거 수집
+1. 변형 선택 후 → `$qa-checklist` 로 해당 변형 TC 생성
+2. TC 생성 후 → `$ui-validate --check tc-gate [URL]` 로 증거 수집
 ```
 
 **Step 5 — 완료 출력**
@@ -643,7 +639,7 @@ mkdir -p harness/design-variants
    Variant D: variant-D.html (프로그레시브 공개 방식)
    비교: comparison.md
 
-   → comparison.md를 검토하고 변형을 선택한 후 /qa-checklist 를 실행하세요.
+   → comparison.md를 검토하고 변형을 선택한 후 $qa-checklist 를 실행하세요.
 ```
 
 ---
@@ -652,7 +648,7 @@ mkdir -p harness/design-variants
 
 | 실패 상황 | 감지 | 대응 |
 |---|---|---|
-| `docs/PRD.md` 부재 | `ls` 실패 | fail loud + "/prd [제품명] 먼저" 후 종료 |
+| `docs/PRD.md` 부재 | `ls` 실패 | fail loud + "$prd [제품명] 먼저" 후 종료 |
 | §11 부재 | 섹션 추출 결과 없음 | fail loud + "PRD §11 필요" 후 종료 |
 | §1 부재 | 섹션 추출 결과 없음 | WARN (FAIL 아님) + "§1 없이 ICP 적합도 평가 생략" 후 계속 |
 | `harness/` 부재 | `ls` 실패 | `mkdir -p harness/design-variants/` 후 진행 |
@@ -688,7 +684,7 @@ mkdir -p harness/design-variants
 **기대 동작:**
 ```
 ❌ 에러: docs/PRD.md 없음.
-/prd [제품명] 먼저 실행하세요.
+$prd [제품명] 먼저 실행하세요.
 ```
 실행 중단.
 
@@ -696,40 +692,40 @@ mkdir -p harness/design-variants
 
 ## Instructions
 
-You are helping write a complete **Unified PRD** for: **$ARGUMENTS**
+You are helping write a complete **Unified PRD** for the product or agent name provided as input.
 
 **Phase 1** — Section 1-3 (사람·문제·가치)
-- Section 1: ICP·페르소나 — `discover/agent-gtm` [예정] (beachhead 5-criteria; 부재 시 ICP 1줄 + 페르소나 2~3개 직접 작성)
-- Section 2: JTBD·Switch 4 Forces — `discover/agent-gtm` [예정] (부재 시 Push/Pull/Anxiety/Habit 4 Forces로 1~3개 Job 직접 작성)
+- Section 1: ICP·페르소나 — `$agent-gtm` [예정] (beachhead 5-criteria; 부재 시 ICP 1줄 + 페르소나 2~3개 직접 작성)
+- Section 2: JTBD·Switch 4 Forces — `$agent-gtm` [예정] (부재 시 Push/Pull/Anxiety/Habit 4 Forces로 1~3개 Job 직접 작성)
 - Section 3: 핵심 문제 + 10배 가치 (정량)
 
 🔍 Checkpoint 1: User 검증 — "ICP·JTBD·문제가 5명 사랑 인터뷰에 그대로 쓸 수 있는가?"
 
 **Phase 2** — Section 4-6 (결정·범위)
-- Section 4: 결정 옵션 매트릭스 — `discover/build-or-buy` [예정] + `architect/orchestration` + `discover/hitl` (부재 시 옵션 2개 × 5개 결정 항목 직접 작성)
-- Section 5: 제외사항 — `hplan/exclusions` 자동 인용
-- Section 6: Now/Next/Later — `discover/cost-sim` (cogs p50/p90)
+- Section 4: 결정 옵션 매트릭스 — `$build-or-buy` [예정] + `$orchestration` + `$hitl` (부재 시 옵션 2개 × 5개 결정 항목 직접 작성)
+- Section 5: 제외사항 — `$exclusions` 자동 인용
+- Section 6: Now/Next/Later — `$cost-sim` (cogs p50/p90)
 
 🔍 Checkpoint 2: User 검증 — "MVP가 60일 안에 가능한가? cogs가 1인 빌더 감당 가능한가?"
 
 **Phase 3** — Section 7-11 (에이전트·실행 사양)
-- Section 7: Role + Anti-Goals — `deliver/instruction` [예정] (부재 시 Anti-Goals 3개 직접 작성)
+- Section 7: Role + Anti-Goals — `$instruction` [예정] (부재 시 Anti-Goals 3개 직접 작성)
 - Section 8: Tools & Integrations + 호출 제한 mandatory
 - Section 9: 3-tier Memory (Working / Long-term / Procedural)
 - Section 10: Trigger & Execution Flow Step-by-Step
 - Section 11: Output Specification + 실제 예시 1개
-- Section 11 보강 (UI 있으면): `deliver/respect --mode brief` 호출 → RESPECT.md 디자인 시그니처 commit (3초 룰 / 다음 행동 / social proof)
+- Section 11 보강 (UI 있으면): `$respect --mode brief` 호출 → RESPECT.md 디자인 시그니처 commit (3초 룰 / 다음 행동 / social proof)
 
 > 일반 SaaS (LLM 에이전트 없음) 이면 Section 7-11에 "N/A — 일반 SaaS" 간단 표기 가능
 > 사용자 인터페이스가 없는 백엔드 에이전트면 디자인 시그니처는 "N/A — 백엔드만" 명시
 
 **Phase 4** — Section 12-14 (지표·가설·실패)
-- Section 12: Dual-axis OKR — `operate/metrics-design --step okr` (cost KR mandatory)
-- Section 13: Top-3 가설 — `discover/assumptions` + 2-day experiment
+- Section 12: Dual-axis OKR — `$metrics-design --step okr` (cost KR mandatory)
+- Section 13: Top-3 가설 — `$assumptions` + 2-day experiment
 - Section 14: 실패 모드 (4개 이상) + HITL 트리거
 
 **Phase 5** — PRD 통합 & TK 인용 & QA Pool 저장
-- `operate/pm-engine` 쿼리로 관련 TK-NNN 3~5개 인용 (각 섹션 하단에 시드)
+- `$pm-engine` 쿼리로 관련 TK-NNN 3~5개 인용 (각 섹션 하단에 시드)
 - §15 QA Pool 결정론 매핑 실행 → `harness/QA_POOL.json` 저장
   - `harness/PERSONA_SPECS.json` 존재 시 페르소나 소스 연결, 없으면 "페르소나 없음" 명시
 - Quality Gate 19개 항목 (15 섹션 + 디자인 시그니처 + §15 QA Pool + 일관성 + TK 인용) 모두 통과 확인 (`references/test-cases.md`와 동일 산식)
