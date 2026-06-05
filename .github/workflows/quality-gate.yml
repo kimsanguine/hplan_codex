@@ -1,0 +1,46 @@
+name: Quality Gate
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  quality-gate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Validate skills and agent docs
+        run: python3 scripts/validate_agents.py
+
+      - name: Run COGS sentinel
+        run: python3 scripts/cogs_sentinel.py --json
+
+      - name: Run unit tests
+        run: python3 -m unittest discover -s tests
+
+      - name: Run setup golden path
+        run: |
+          tmpdir="$(mktemp -d)"
+          HPLAN_CODEX_SOURCE_DIR="$PWD" bash scripts/setup.sh --dir="$tmpdir"
+          test -f "$tmpdir/AGENTS.md"
+          test -f "$tmpdir/harness/PRD.md.template"
+          test -f "$tmpdir/scripts/generate_report.py"
+          test -f "$tmpdir/scripts/decision_log.py"
+          test -f "$tmpdir/scripts/exclusions_registry.py"
+          test -f "$tmpdir/scripts/interview_synthesis.py"
+          test -f "$tmpdir/scripts/ost_generator.py"
+          test -f "$tmpdir/scripts/validate-mermaid.py"
+          test -f "$tmpdir/scripts/track-probe.sh"
+
+      - name: Check shell script syntax
+        run: bash -n scripts/setup.sh scripts/track-probe.sh

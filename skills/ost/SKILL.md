@@ -65,7 +65,7 @@ Running for: **the user's input**
 1. 인터뷰에서 strong-push로 태깅된 사람 수(`persons_with_strong_push`)를 opportunity의 evidence_count로 사용한다. strong-push = "최근 실제로 겪은 painful event + 현재 workaround"가 동시에 확인된 응답자.
 2. opportunity는 "X가 Y를 못 한다" 형태 — solution 아님.
 3. 각 solution마다 `experiment` + `decision_rule` 명시.
-4. `python3 hplan/scripts/ost_generator.py ost.json --out docs/OPPORTUNITY_TREE.md`.
+4. `python3 scripts/ost_generator.py ost.json --out docs/OPPORTUNITY_TREE.md`.
 5. 생성된 Mermaid diagram을 stakeholder review에 사용.
 
 ## Outputs

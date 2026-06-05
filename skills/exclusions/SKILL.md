@@ -41,16 +41,16 @@ Running for: **the user's input**
 
 ```bash
 # Add
-python3 hplan/scripts/exclusions_registry.py add "AI marketing copy generator" \
+python3 scripts/exclusions_registry.py add "AI marketing copy generator" \
   --why "the existing incumbents 점유" \
   --reopen "엔터프라이즈 컴플라이언스 인터뷰 3건+" \
   --competitor "Incumbent A" --competitor "Incumbent B"
 
 # Check
-python3 hplan/scripts/exclusions_registry.py check "generic AI marketing copy tool"
+python3 scripts/exclusions_registry.py check "generic AI marketing copy tool"
 
 # List
-python3 hplan/scripts/exclusions_registry.py list
+python3 scripts/exclusions_registry.py list
 ```
 
 ## Steps

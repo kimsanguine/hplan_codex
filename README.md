@@ -54,19 +54,39 @@ Official docs and other install options: https://developers.openai.com/codex
 
 ## Install hplan_codex
 
-**Recommended — from inside a Codex session:**
+**Recommended — install skills from inside a Codex session:**
 
 ```
 $skill-installer https://github.com/kimsanguine/hplan_codex
 ```
 
-This pulls the 28 skills into your Codex CLI skills directory.
+This pulls the 28 skills into your Codex CLI skills directory. It does **not**
+copy project harness files or helper scripts into the repo you are working on.
 
-**Manual alternative** (clone + harness setup):
+**Project setup — copy harness files and scripts into your project:**
+
+```bash
+bash <(curl -fsSL https://raw.githubusercontent.com/kimsanguine/hplan_codex/main/scripts/setup.sh)
+```
+
+`scripts/setup.sh` copies `harness/` templates, `AGENTS.md`, `config.toml.example`,
+and helper scripts such as `scripts/track-probe.sh`. It does **not** install
+Codex skills; use `$skill-installer` for that.
+
+For local pre-release verification before changes are pushed to `main`:
+
+```bash
+HPLAN_CODEX_SOURCE_DIR=/path/to/hplan_codex bash scripts/setup.sh --dir=/path/to/test-project
+```
+
+**Manual alternative** (clone + skills + harness setup):
 
 ```bash
 git clone https://github.com/kimsanguine/hplan_codex.git
+mkdir -p "${CODEX_HOME:-$HOME/.codex}/skills"
+cp -R hplan_codex/skills/* "${CODEX_HOME:-$HOME/.codex}/skills/"
 cp -r hplan_codex/harness/ ./harness/
+cp -r hplan_codex/scripts/ ./scripts/
 cp hplan_codex/AGENTS.md ./AGENTS.md
 # optional: copy the config example to your global Codex config
 cp hplan_codex/config.toml.example ~/.codex/config.toml   # then edit
@@ -104,7 +124,28 @@ hplan_codex runs inside Codex CLI's sandbox. Codex 0.130.0 supports three sandbo
 
 Set the sandbox mode in your Codex CLI session or config. hplan_codex skills assume `workspace-write` for the build phases.
 
-> Codex CLI 0.130.0 does not support file-based hooks. `scripts/track-probe.sh` is provided as a manual sprint-tracking probe you can run yourself or wire into a Codex automation.
+> Codex CLI 0.130.0 does not support file-based hooks. `scripts/track-probe.sh` is provided as a manual sprint-tracking probe you can run yourself with `bash scripts/track-probe.sh` or wire into a Codex automation.
+
+## Status & Verification
+
+Currently executable:
+- Skill installation via `$skill-installer`
+- Harness/script bootstrap via `bash scripts/setup.sh`
+- Manual probe invocation via `bash scripts/track-probe.sh`
+- Static skill/doc validation via `python3 scripts/validate_agents.py`
+
+Planned or adapter-dependent:
+- `$agent-gtm`, `$build-or-buy`, `$instruction`, `$respect`, `$ui-validate`, `$weekly-rollup`
+- Automatic file-based hook registration in Codex CLI
+
+Verification commands:
+
+```bash
+python3 scripts/validate_agents.py
+bash scripts/setup.sh --help
+HPLAN_CODEX_SOURCE_DIR="$PWD" bash scripts/setup.sh --dir="$(mktemp -d)"
+printf '%s\n' '{"tool_name":"write_file","tool_input":{"file_path":"noop","content":"a\nb\n"}}' | bash scripts/track-probe.sh
+```
 
 ---
 

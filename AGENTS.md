@@ -107,13 +107,28 @@ Subagent definitions, when a skill needs them, live alongside the skill (e.g. `s
 
 ## Installation
 
-Install hplan_codex directly from a Codex session:
+Install hplan_codex skills directly from a Codex session:
 
 ```
 $skill-installer https://github.com/kimsanguine/hplan_codex
 ```
 
-This pulls the skills into your Codex CLI skills directory. See `README.md` for the manual install alternative and harness setup.
+This pulls the skills into your Codex CLI skills directory only.
+It does not copy `harness/` templates or helper scripts into the target project.
+
+Use `scripts/setup.sh` for project setup:
+
+```bash
+bash <(curl -fsSL https://raw.githubusercontent.com/kimsanguine/hplan_codex/main/scripts/setup.sh)
+```
+
+`scripts/setup.sh` copies `harness/`, `AGENTS.md`, `config.toml.example`, and helper scripts such as `scripts/track-probe.sh`. See `README.md` for the manual install alternative, including `skills/` and `scripts/` copy steps.
+
+For local pre-release verification before changes are pushed to `main`:
+
+```bash
+HPLAN_CODEX_SOURCE_DIR=/path/to/hplan_codex bash scripts/setup.sh --dir=/path/to/test-project
+```
 
 ---
 
@@ -200,6 +215,24 @@ trust_level = "trusted"
 Reasoning depth is controlled by `model_reasoning_effort` (`minimal` / `low` / `medium` / `high`), not by a separate model alias.
 
 Codex CLI 0.130.0 does not support file-based hooks. Background automation, when needed, is driven by Codex automations/rules; `scripts/track-probe.sh` is provided as a manual probe you can invoke directly.
+
+Invoke the probe with Bash:
+
+```bash
+bash scripts/track-probe.sh
+```
+
+Currently executable: `$skill-installer`, `bash scripts/setup.sh`, `bash scripts/track-probe.sh`, and `python3 scripts/validate_agents.py`.
+Planned or adapter-dependent: `$agent-gtm`, `$build-or-buy`, `$instruction`, `$respect`, `$ui-validate`, `$weekly-rollup`, and automatic file-based hook registration.
+
+Verification commands:
+
+```bash
+python3 scripts/validate_agents.py
+bash scripts/setup.sh --help
+HPLAN_CODEX_SOURCE_DIR="$PWD" bash scripts/setup.sh --dir="$(mktemp -d)"
+printf '%s\n' '{"tool_name":"write_file","tool_input":{"file_path":"noop","content":"a\nb\n"}}' | bash scripts/track-probe.sh
+```
 
 ---
 

@@ -36,19 +36,39 @@ npm install -g @openai/codex
 
 ## hplan_codex 설치
 
-**권장 — Codex 세션 안에서:**
+**권장 — Codex 세션 안에서 스킬 설치:**
 
 ```
 $skill-installer https://github.com/kimsanguine/hplan_codex
 ```
 
-28개 스킬을 Codex CLI 스킬 디렉토리로 가져옵니다.
+28개 스킬을 Codex CLI 스킬 디렉토리로 가져옵니다. 현재 작업 중인 프로젝트에
+`harness/` 파일이나 보조 스크립트를 복사하지는 않습니다.
 
-**수동 대안** (clone + harness 설정):
+**프로젝트 설정 — harness 파일과 스크립트 복사:**
+
+```bash
+bash <(curl -fsSL https://raw.githubusercontent.com/kimsanguine/hplan_codex/main/scripts/setup.sh)
+```
+
+`scripts/setup.sh`는 `harness/` 템플릿, `AGENTS.md`, `config.toml.example`,
+`scripts/track-probe.sh` 같은 보조 스크립트를 프로젝트로 복사합니다.
+Codex 스킬 설치는 하지 않으므로 `$skill-installer`와 함께 사용합니다.
+
+`main`에 push하기 전 로컬 변경으로 설치를 검증하려면:
+
+```bash
+HPLAN_CODEX_SOURCE_DIR=/path/to/hplan_codex bash scripts/setup.sh --dir=/path/to/test-project
+```
+
+**수동 대안** (clone + 스킬 + harness 설정):
 
 ```bash
 git clone https://github.com/kimsanguine/hplan_codex.git
+mkdir -p "${CODEX_HOME:-$HOME/.codex}/skills"
+cp -R hplan_codex/skills/* "${CODEX_HOME:-$HOME/.codex}/skills/"
 cp -r hplan_codex/harness/ ./harness/
+cp -r hplan_codex/scripts/ ./scripts/
 cp hplan_codex/AGENTS.md ./AGENTS.md
 # 선택: config 예시를 전역 Codex 설정으로 복사
 cp hplan_codex/config.toml.example ~/.codex/config.toml   # 이후 값 편집
@@ -98,7 +118,28 @@ hplan_codex는 Codex CLI 샌드박스 안에서 실행됩니다. Codex 0.130.0�
 
 샌드박스 모드는 Codex CLI 세션 또는 설정에서 지정합니다. hplan_codex의 빌드 단계 스킬은 `workspace-write`를 전제로 합니다.
 
-> Codex CLI 0.130.0은 file-based hook을 지원하지 않습니다. `scripts/track-probe.sh`는 직접 실행하거나 Codex automation에 연결할 수 있는 수동 스프린트 추적 프로브로 제공됩니다.
+> Codex CLI 0.130.0은 file-based hook을 지원하지 않습니다. `scripts/track-probe.sh`는 `bash scripts/track-probe.sh`로 직접 실행하거나 Codex automation에 연결할 수 있는 수동 스프린트 추적 프로브로 제공됩니다.
+
+## 현재 상태 & 검증
+
+현재 실행 가능:
+- `$skill-installer`를 통한 스킬 설치
+- `bash scripts/setup.sh`를 통한 harness/script bootstrap
+- `bash scripts/track-probe.sh` 수동 probe 실행
+- `python3 scripts/validate_agents.py` 정적 스킬/문서 검증
+
+예정 또는 adapter 의존:
+- `$agent-gtm`, `$build-or-buy`, `$instruction`, `$respect`, `$ui-validate`, `$weekly-rollup`
+- Codex CLI file-based hook 자동 등록
+
+검증 명령:
+
+```bash
+python3 scripts/validate_agents.py
+bash scripts/setup.sh --help
+HPLAN_CODEX_SOURCE_DIR="$PWD" bash scripts/setup.sh --dir="$(mktemp -d)"
+printf '%s\n' '{"tool_name":"write_file","tool_input":{"file_path":"noop","content":"a\nb\n"}}' | bash scripts/track-probe.sh
+```
 
 ---
 

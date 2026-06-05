@@ -2,6 +2,8 @@
 # setup.sh — hplan_codex harness installer
 # Usage: bash <(curl -fsSL https://raw.githubusercontent.com/kimsanguine/hplan_codex/main/scripts/setup.sh)
 # Or:    bash <(curl -fsSL https://raw.githubusercontent.com/kimsanguine/hplan_codex/main/scripts/setup.sh) --dir=./myproject
+# Local pre-release test:
+#        HPLAN_CODEX_SOURCE_DIR=/path/to/hplan_codex bash scripts/setup.sh --dir=./myproject
 #
 # This copies the harness templates, AGENTS.md, and helper scripts into your
 # project. To install the SKILLS, run the following inside a Codex session
@@ -15,6 +17,7 @@
 set -euo pipefail
 
 RAW_BASE="https://raw.githubusercontent.com/kimsanguine/hplan_codex/main"
+SOURCE_DIR="${HPLAN_CODEX_SOURCE_DIR:-}"
 TARGET_DIR="."
 
 for arg in "$@"; do
@@ -23,6 +26,7 @@ for arg in "$@"; do
     --help|-h)
       echo "Usage: bash setup.sh [--dir=<target-project-dir>]"
       echo "  --dir  Target project directory (default: current directory)"
+      echo "  HPLAN_CODEX_SOURCE_DIR=/path/to/hplan_codex  Copy from a local checkout instead of GitHub raw"
       exit 0
       ;;
     *)
@@ -35,11 +39,18 @@ done
 
 echo "hplan_codex harness installer"
 echo "Target: $TARGET_DIR"
+if [ -n "$SOURCE_DIR" ]; then
+  echo "Source: $SOURCE_DIR"
+fi
 echo ""
 
 # 1) Check dependencies
 if ! command -v curl &>/dev/null; then
   echo "Error: 'curl' is required but not found." >&2
+  exit 1
+fi
+if [ -n "$SOURCE_DIR" ] && [ ! -d "$SOURCE_DIR" ]; then
+  echo "Error: HPLAN_CODEX_SOURCE_DIR does not exist: $SOURCE_DIR" >&2
   exit 1
 fi
 
@@ -53,7 +64,18 @@ FAILED_OPTIONAL=()
 # fetch <url-suffix> <dest> <required|optional>
 fetch() {
   local suffix="$1" dest="$2" level="$3"
-  if curl -fsSL "$RAW_BASE/$suffix" -o "$dest" 2>/dev/null; then
+  if [ -n "$SOURCE_DIR" ] && [ -f "$SOURCE_DIR/$suffix" ]; then
+    cp "$SOURCE_DIR/$suffix" "$dest"
+    echo "  ok  $suffix"
+  elif [ -n "$SOURCE_DIR" ]; then
+    if [ "$level" = "required" ]; then
+      echo "  FAIL (required) $suffix" >&2
+      FAILED_REQUIRED+=("$suffix")
+    else
+      echo "  skip (optional) $suffix" >&2
+      FAILED_OPTIONAL+=("$suffix")
+    fi
+  elif curl -fsSL "$RAW_BASE/$suffix" -o "$dest" 2>/dev/null; then
     echo "  ok  $suffix"
   else
     if [ "$level" = "required" ]; then
@@ -85,7 +107,9 @@ fetch "config.toml.example" "$TARGET_DIR/config.toml.example" optional
 # 6) Copy scripts (required)
 echo "Copying scripts/..."
 mkdir -p "$TARGET_DIR/scripts"
-for f in cogs_sentinel.py validate_agents.py track-probe.sh; do
+for f in cogs_sentinel.py decision_log.py exclusions_registry.py generate_report.py \
+         interview_synthesis.py ost_generator.py validate-mermaid.py validate_agents.py \
+         track-probe.sh; do
   fetch "scripts/$f" "$TARGET_DIR/scripts/$f" required
 done
 chmod +x "$TARGET_DIR/scripts/track-probe.sh" 2>/dev/null || true

@@ -58,12 +58,12 @@ JSON 파일 또는 인라인 입력:
 1. Read `examples/good-01.md` to internalize the rubric.
 2. If user input is freeform, structure it into the 6 fields above.
 3. Save to `harness/evidence/last_input.json`.
-4. Run `python3 hplan/scripts/generate_report.py <path> --json`.
+4. Run `python3 scripts/generate_report.py <path> --json`.
 5. Report score + decision + breakdown + missing axes.
 6. If `decision == "interview"`, immediately route to `discover/customer-reach` 의 `--mode interview-questions` (다음 인터뷰에서 들어야 할 신호를 질문 세트로 설계).
 7. If `decision == "build"`, write the report to `harness/evidence/report.md` and route to `cogs-sentinel`.
 
-> 결과 리포트는 수동 실행으로 확인한다: `python3 hplan/scripts/generate_report.py harness/evidence/last_input.json --json | tail -50`
+> 결과 리포트는 수동 실행으로 확인한다: `python3 scripts/generate_report.py harness/evidence/last_input.json --json | tail -50`
 
 ## Outputs
 

@@ -39,6 +39,8 @@ metadata:
 
 ### Route to Other Skills When
 
+현재 이 repo에서 실행 가능한 스킬은 이름만 표기한다. 아직 이 repo에 없거나 외부 adapter가 필요한 항목은 `[예정]` 또는 `[adapter-dependent]`로 표시한다.
+
 - **배포 전 QA 라운드** → `$qa-checklist --mode adversarial` (PRD §15 QA Pool + PERSONA_SPECS 기반 동적 에이전트 구성)
 - **ICP·beachhead 정의** → `$agent-gtm` [예정]으로 라우팅 후 Section 1에 주입
 - **JTBD·Switch Interview** → `$agent-gtm` [예정]으로 라우팅 후 Section 2에 주입
@@ -48,9 +50,9 @@ metadata:
 - **Instruction 7요소 상세 설계** → `$instruction` [예정] → Section 7 보강
 - **OKR 정의** → `$metrics-design --step okr` (dual-axis) → Section 12
 - **가설 분해** → `$assumptions` (4축) → Section 13
-- **신뢰성·SLO** → `$reliability` → Section 14
-- **Multi-ecosystem export** → `$handoff` (Spec-Kit / Kiro / GStack / Codex CLI)
-- **사용자 인터페이스가 있는 LLM 에이전트 (UI/UX 강제)** → `$respect --mode brief` (RESPECT.md 디자인 시그니처) → Section 11 출력 사양 보강
+- **신뢰성·SLO** → `$reliability` [예정] → Section 14
+- **Multi-ecosystem export** → `$handoff` [예정] (Spec-Kit / Kiro / GStack / Codex CLI)
+- **사용자 인터페이스가 있는 LLM 에이전트 (UI/UX 강제)** → `$respect --mode brief` [adapter-dependent] (RESPECT.md 디자인 시그니처) → Section 11 출력 사양 보강
 - design-shotgun 변형 선택 후 TC 자동 생성 → `$qa-checklist`
 
 ### Boundary Checks
@@ -59,7 +61,7 @@ metadata:
 - 각 섹션은 "5명 사랑 인터뷰에 그대로 쓸 수 있는가? + 엔지니어가 이것만으로 구현 가능한가?" 두 기준으로 검증
 - 제외사항(Section 5)이 최소 5개 이상 — "의식적으로 안 만드는 것" 명시
 - Section 7-11 (에이전트 사양)은 1인 빌더가 LLM 에이전트를 포함하지 않으면 "N/A — 일반 SaaS"로 간단 표기 가능
-- `--mode design-shotgun` 사용 시 `docs/PRD.md` 부재 → fail loud: "docs/PRD.md 없음. $prd [제품명] 먼저 실행하세요."
+- `--mode design-shotgun` 사용 시 `harness/PRD.md` 부재 → fail loud: "harness/PRD.md 없음. $prd [제품명] 먼저 실행하세요."
 - `--mode design-shotgun` 사용 시 §11 섹션 부재 → fail loud: "PRD §11 Output Specification 섹션이 필요합니다."
 
 ---
@@ -80,7 +82,7 @@ metadata:
 | 성공 지표가 추정·동기 부재 | Section 12에 측정·기한 없음 | `$metrics-design --step okr` 라우팅으로 Dual-axis 재작성 |
 | 검증 가능 가설 없음 | Section 13에 가설 0개 | `$assumptions`로 top-3 + 2-day experiment 강제 |
 | HITL 트리거 모호 | Section 14에 "사용자 확인" 같이 추상 | 구체적 임계값·이벤트로 재정의 (예: 충실성 < 0.7) |
-| `docs/PRD.md` 부재 (`--mode design-shotgun`) | `ls` 실패 | fail loud + "$prd 먼저" 후 종료 |
+| `harness/PRD.md` 부재 (`--mode design-shotgun`) | `ls` 실패 | fail loud + "$prd 먼저" 후 종료 |
 | §11 부재 (`--mode design-shotgun`) | 섹션 추출 없음 | fail loud + "PRD §11 필요" 후 종료 |
 | §1 부재 (`--mode design-shotgun`) | 섹션 추출 없음 | WARN + ICP 적합도 평가 생략, 계속 진행 |
 
@@ -106,7 +108,7 @@ metadata:
 - [ ] Section 15: QA Pool — 페르소나 소스 명시, 개발 역할 결정론 매핑 근거 포함, `harness/QA_POOL.json` 저장됨 (Yes/No)
 - [ ] 전체 일관성: 섹션 간 충돌·누락 없음 (Yes/No)
 - [ ] TK 인용: `$pm-engine` 쿼리로 관련 TK-NNN 3~5개 (Yes/No)
-- [ ] `--mode design-shotgun`: docs/PRD.md 부재 시 즉시 종료
+- [ ] `--mode design-shotgun`: harness/PRD.md 부재 시 즉시 종료
 - [ ] `--mode design-shotgun`: §11 부재 시 즉시 종료
 - [ ] `--mode design-shotgun`: 4개 HTML 변형 + comparison.md 생성됨
 - [ ] `--mode design-shotgun`: 각 HTML 파일에 §11 해석 주석 포함
@@ -500,7 +502,7 @@ QA Pool 구성 규칙:
 
 ## `--mode design-shotgun` — §11 시각화 변형 생성
 
-`docs/PRD.md`의 §1 ICP + §11 Output Specification을 파싱해
+`harness/PRD.md`의 §1 ICP + §11 Output Specification을 파싱해
 `harness/design-variants/` 에 HTML 변형 4개와 비교 문서를 생성한다.
 
 ---
@@ -522,8 +524,8 @@ QA Pool 구성 규칙:
 
 | 입력 | 출처 | 처리 |
 |---|---|---|
-| ICP 정의 + 핵심 고통 | `docs/PRD.md` §1 | 변형 적합도 판단 기준 |
-| 출력 채널·형식·톤 | `docs/PRD.md` §11 | 4개 변형의 공통 기반 |
+| ICP 정의 + 핵심 고통 | `harness/PRD.md` §1 | 변형 적합도 판단 기준 |
+| 출력 채널·형식·톤 | `harness/PRD.md` §11 | 4개 변형의 공통 기반 |
 
 ---
 
@@ -532,12 +534,12 @@ QA Pool 구성 규칙:
 **Step 1 — PRD 로드 및 섹션 추출**
 
 ```bash
-ls docs/PRD.md 2>/dev/null || echo "PRD_MISSING"
+ls harness/PRD.md 2>/dev/null || echo "PRD_MISSING"
 ```
 
 PRD_MISSING 시:
 ```
-❌ 에러: docs/PRD.md 없음.
+❌ 에러: harness/PRD.md 없음.
 $prd [제품명] 먼저 실행하세요.
 ```
 즉시 종료.
@@ -546,7 +548,7 @@ $prd [제품명] 먼저 실행하세요.
 
 ```bash
 # 허용 heading 패턴: "Section 11", "§11", "11 —", "11." (대소문자 무관)
-grep -in "^#\+.*\(section 11\|§11\|11 —\|11\.\)" docs/PRD.md | head -3
+grep -in "^#\+.*\(section 11\|§11\|11 —\|11\.\)" harness/PRD.md | head -3
 ```
 
 - 매칭 0건 → 즉시 종료:
@@ -559,11 +561,11 @@ grep -in "^#\+.*\(section 11\|§11\|11 —\|11\.\)" docs/PRD.md | head -3
 
 §1도 동일하게 grep으로 확인:
 ```bash
-grep -in "^#\+.*\(section 1\|§1\|1 —\|1\.\)" docs/PRD.md | head -3
+grep -in "^#\+.*\(section 1\|§1\|1 —\|1\.\)" harness/PRD.md | head -3
 ```
 §1 매칭 0건 → WARN (FAIL 아님): "§1 없이 ICP 적합도 평가 생략"
 
-`docs/PRD.md` Read → §1 (ICP / 페르소나) + §11 (Output Specification) 추출.
+`harness/PRD.md` Read → §1 (ICP / 페르소나) + §11 (Output Specification) 추출.
 §11 부재 시:
 ```
 ❌ 에러: PRD §11 Output Specification 섹션이 필요합니다.
@@ -605,7 +607,7 @@ mkdir -p harness/design-variants
 
 ```markdown
 # Design Variants — [제품명]
-생성: YYYY-MM-DD | 소스: docs/PRD.md §1 + §11
+생성: YYYY-MM-DD | 소스: harness/PRD.md §1 + §11
 
 ## §11 Output Spec 요약
 [추출된 §11 핵심 내용 3-5줄]
@@ -648,7 +650,7 @@ mkdir -p harness/design-variants
 
 | 실패 상황 | 감지 | 대응 |
 |---|---|---|
-| `docs/PRD.md` 부재 | `ls` 실패 | fail loud + "$prd [제품명] 먼저" 후 종료 |
+| `harness/PRD.md` 부재 | `ls` 실패 | fail loud + "$prd [제품명] 먼저" 후 종료 |
 | §11 부재 | 섹션 추출 결과 없음 | fail loud + "PRD §11 필요" 후 종료 |
 | §1 부재 | 섹션 추출 결과 없음 | WARN (FAIL 아님) + "§1 없이 ICP 적합도 평가 생략" 후 계속 |
 | `harness/` 부재 | `ls` 실패 | `mkdir -p harness/design-variants/` 후 진행 |
@@ -670,7 +672,7 @@ mkdir -p harness/design-variants
 ### Examples (--mode design-shotgun)
 
 #### Good Example
-**입력:** `--mode design-shotgun` (docs/PRD.md 존재, §1·§11 있음)
+**입력:** `--mode design-shotgun` (harness/PRD.md 존재, §1·§11 있음)
 
 **기대 동작:**
 1. PRD §1 ICP + §11 Output Spec 추출
@@ -679,11 +681,11 @@ mkdir -p harness/design-variants
 4. 완료 통계 출력
 
 #### Bad Example
-**입력:** `--mode design-shotgun` (docs/PRD.md 없음)
+**입력:** `--mode design-shotgun` (harness/PRD.md 없음)
 
 **기대 동작:**
 ```
-❌ 에러: docs/PRD.md 없음.
+❌ 에러: harness/PRD.md 없음.
 $prd [제품명] 먼저 실행하세요.
 ```
 실행 중단.
@@ -729,7 +731,7 @@ You are helping write a complete **Unified PRD** for the product or agent name p
 - §15 QA Pool 결정론 매핑 실행 → `harness/QA_POOL.json` 저장
   - `harness/PERSONA_SPECS.json` 존재 시 페르소나 소스 연결, 없으면 "페르소나 없음" 명시
 - Quality Gate 19개 항목 (15 섹션 + 디자인 시그니처 + §15 QA Pool + 일관성 + TK 인용) 모두 통과 확인 (`references/test-cases.md`와 동일 산식)
-- `docs/PRD.md`에 저장
+- `harness/PRD.md`에 저장
 
 ---
 

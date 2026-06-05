@@ -49,8 +49,8 @@ metadata:
 ### Route to Other Skills When
 - 비용 시뮬레이션 (lognormal) → `$cost-sim`
 - WBS 30 task 초과 → `$conductor`로 태스크 순차 실행
-- UI 디자인 확인 → `$ui-validate`
-- 주간 운영 회고 → `$weekly-rollup`
+- UI 디자인 확인 → `$ui-validate` [예정]
+- 주간 운영 회고 → `$weekly-rollup` [예정]
 
 ### Boundary Checks
 - PRD vague (Section 6 누락) → fail loud, PRD 보강 요청
@@ -156,12 +156,12 @@ for task in tasks:
 - `.gitignore`에 `.track/` 없으면 append
 
 **Step 2 — probe 스크립트 설치**
-- `references/track-probe.sh`를 프로젝트 `scripts/track-probe.sh`로 복사 (없으면)
+- `scripts/track-probe.sh`를 프로젝트에 복사 (없으면)
 - `chmod +x scripts/track-probe.sh`
 - ⚠ 인라인 작성 금지 — 검증된 배포 스크립트를 그대로 복사한다.
 
 **Step 3 — 추적 실행 방식 안내**
-- 추적은 파일 편집 후 `python3 scripts/track-probe.sh`를 **수동** 또는 **Codex automation**으로 실행해 수집한다.
+- 추적은 파일 편집 후 `bash scripts/track-probe.sh`를 **수동** 또는 **Codex automation**으로 실행해 수집한다.
 - probe는 stdin으로 JSON을 받는다 (tool_name·tool_input). CLI 인자/env-var 방식 아님.
 - 즉, 코드 변경이 일어난 뒤 해당 이벤트(JSON)를 probe에 파이프로 전달하면 `.track/actual_log.jsonl`에 entry가 append된다.
 
@@ -170,7 +170,7 @@ for task in tasks:
 **Step 4 — probe smoke test**
 - `echo '{"tool_name":"write_file","tool_input":{"file_path":"noop","content":"a
 b
-"}}' | python3 scripts/track-probe.sh`
+"}}' | bash scripts/track-probe.sh`
 - `.track/actual_log.jsonl` 마지막 줄에 entry(loc_delta=2) 확인 → pass
 
 **Step 5 — 사용자 안내**

@@ -40,15 +40,15 @@ Running for: **the user's input**
 
 ```bash
 # Log a decision
-python3 hplan/scripts/decision_log.py log \
+python3 scripts/decision_log.py log \
   --project alpha-app --gate build --decision build --score 78 \
   --reason "5/5 강한 신호" --reason "COGS GREEN"
 
 # Backfill outcome (3-6 months later)
-python3 hplan/scripts/decision_log.py update --id dec-XXX --outcome shipped
+python3 scripts/decision_log.py update --id dec-XXX --outcome shipped
 
 # Audit
-python3 hplan/scripts/decision_log.py audit
+python3 scripts/decision_log.py audit
 ```
 
 ## Steps

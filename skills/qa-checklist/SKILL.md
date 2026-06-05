@@ -1,6 +1,6 @@
 ---
 name: qa-checklist
-description: "docs/PRD.md를 파싱해 harness/QA_CHECKLIST.md를 자동 생성. ICP/실패 시나리오 기반으로 TC를 critical/major/minor 3등급으로 분류하고 디바이스·환경 링크. deliver 완료 후 또는 배포 품질 게이트 전에 실행."
+description: "harness/PRD.md를 파싱해 harness/QA_CHECKLIST.md를 자동 생성. ICP/실패 시나리오 기반으로 TC를 critical/major/minor 3등급으로 분류하고 디바이스·환경 링크. deliver 완료 후 또는 배포 품질 게이트 전에 실행."
 metadata:
   short-description: "PRD 기반 QA 체크리스트 자동 생성 + adversarial QA 라운드"
   plugin: deliver
@@ -8,7 +8,7 @@ metadata:
 
 ## Core Goal
 
-`docs/PRD.md`의 ICP·성공 지표·실패 시나리오 섹션을 파싱해
+`harness/PRD.md`의 ICP·성공 지표·실패 시나리오 섹션을 파싱해
 `harness/QA_CHECKLIST.md`를 자동 생성한다.
 
 | 모드 | 동작 |
@@ -65,13 +65,13 @@ PRD에 명시된 타겟 플랫폼 기준:
 - **배포 전 최종 QA 라운드** — `--mode adversarial`: `harness/QA_POOL.json`이 존재하고 실 사용자 페르소나 + 개발 리뷰어 관점 검수가 필요할 때
 
 ### Route to Other Skills When
-- UI 런타임 검증 → `$ui-validate`
-- ship 직전 전체 게이트 → `$respect --mode checkpoint`
+- UI 런타임 검증 → `$ui-validate` [예정]
+- ship 직전 전체 게이트 → `$respect --mode checkpoint` [adapter-dependent]
 - PRD 작성 (§15 QA Pool 포함) → `$prd`
-- 페르소나 구성 → `$interview-synthesis` (PERSONA_SPECS.json 생성)
+- 페르소나 구성 → `$interview-synthesis` [예정] (PERSONA_SPECS.json 생성)
 
 ### Boundary Checks
-- `docs/PRD.md` 부재 → fail loud + "docs/PRD.md 없음. `$prd` (deliver 스킬, §15 QA Pool 포함) 먼저 실행하세요."
+- `harness/PRD.md` 부재 → fail loud + "harness/PRD.md 없음. `$prd` (deliver 스킬, §15 QA Pool 포함) 먼저 실행하세요."
 - Section 1(ICP) 부재 → fail loud + "PRD §1 ICP 섹션이 필요합니다."
 - `harness/` 디렉터리 부재 → `mkdir -p harness/` 후 진행
 - `--mode adversarial` + `harness/QA_POOL.json` 부재 → fail loud + "harness/QA_POOL.json 없음. $prd 실행 후 §15 QA Pool이 생성되어야 합니다."
@@ -85,9 +85,9 @@ PRD에 명시된 타겟 플랫폼 기준:
 | 입력 | 출처 | 처리 |
 |---|---|---|
 | `--regenerate` / `--append` / `--mode adversarial` | 호출 인자 | 모드 분기 |
-| ICP 조건 목록 | `docs/PRD.md` Section 1 | critical TC 후보 |
-| 성공 지표 | `docs/PRD.md` Section 12 (있으면) | 성공 지표 기반 TC 후보 |
-| 실패 시나리오 | `docs/PRD.md` Section 14 | major/critical TC 후보 |
+| ICP 조건 목록 | `harness/PRD.md` Section 1 | critical TC 후보 |
+| 성공 지표 | `harness/PRD.md` Section 12 (있으면) | 성공 지표 기반 TC 후보 |
+| 실패 시나리오 | `harness/PRD.md` Section 14 | major/critical TC 후보 |
 | CONDITIONAL_GO 조건 | `harness/build-gate/checkpoint.json` (있으면) | 추가 TC 후보 |
 | QA Pool | `harness/QA_POOL.json` (`--mode adversarial` 전용) | 동적 에이전트 역할 구성 |
 | 페르소나 스펙 | `harness/PERSONA_SPECS.json` (`--mode adversarial` 전용, 선택) | 페르소나 에이전트 구성 |
@@ -105,12 +105,12 @@ mode = "--regenerate" if "--regenerate" in 인자 else "--append"
 ```
 
 ```bash
-ls docs/PRD.md 2>/dev/null || echo "PRD_MISSING"
+ls harness/PRD.md 2>/dev/null || echo "PRD_MISSING"
 ```
 
 PRD_MISSING 시:
 ```
-❌ 에러: docs/PRD.md 없음.
+❌ 에러: harness/PRD.md 없음.
 `$prd` (deliver 스킬) 먼저 실행하세요.
 `--mode adversarial` 예정이면 `$prd`를 사용해야 §15 QA Pool(harness/QA_POOL.json)이 생성됩니다.
 ```
@@ -166,7 +166,7 @@ mkdir -p harness
 
 ```markdown
 # QA Checklist — [제품명]
-생성: YYYY-MM-DD | 소스: docs/PRD.md
+생성: YYYY-MM-DD | 소스: harness/PRD.md
 
 ## 🔴 Critical (ICP 핵심 경로)
 | TC-ID | 시나리오 | 환경/디바이스 | 전제조건 | 기대 결과 | PRD 출처 | 심각도 |
@@ -205,7 +205,7 @@ adversarial QA 라운드 모드로 실행한다.
 ```bash
 ls harness/QA_POOL.json 2>/dev/null || echo "QA_POOL_MISSING"
 ls harness/PERSONA_SPECS.json 2>/dev/null || echo "PERSONA_MISSING"
-ls docs/PRD.md 2>/dev/null || echo "PRD_MISSING"
+ls harness/PRD.md 2>/dev/null || echo "PRD_MISSING"
 ```
 
 - `QA_POOL_MISSING` → 즉시 종료: "harness/QA_POOL.json 없음. $prd 실행 후 §15 QA Pool 생성 필요."
@@ -216,7 +216,7 @@ ls docs/PRD.md 2>/dev/null || echo "PRD_MISSING"
 
 `harness/QA_POOL.json` 로드 → `dev_roles` 배열에서 역할 목록 추출.
 - `dev_roles`가 빈 배열(`[]`)이면 즉시 종료: "`dev_roles`가 비어 있습니다. $prd 재실행하고 §15 QA Pool을 완성하세요."
-- `interview_evidence_verified` 필드가 `false`이면 WARN: "⚠️ interview_evidence_verified: false — 인터뷰 evidence 없이 생성된 QA Pool입니다. 결과 신뢰도가 낮을 수 있습니다. `python3 hplan/scripts/interview_synthesis.py import → tag → audit` 완료 후 `$prd` 재실행해 `interview_evidence_verified: true`로 갱신하세요."
+- `interview_evidence_verified` 필드가 `false`이면 WARN: "⚠️ interview_evidence_verified: false — 인터뷰 evidence 없이 생성된 QA Pool입니다. 결과 신뢰도가 낮을 수 있습니다. `python3 scripts/interview_synthesis.py import → tag → audit` 완료 후 `$prd` 재실행해 `interview_evidence_verified: true`로 갱신하세요."
 
 `harness/PERSONA_SPECS.json` 존재 시 → P01~P0N 로드.
 - PERSONA_SPECS.json 내용이 빈 배열(`[]`)이면 → PERSONA_MISSING과 동일하게 처리:
@@ -358,7 +358,7 @@ CRITICAL 또는 HIGH 잔존 시:
 
 | 실패 상황 | 감지 | 대응 |
 |---|---|---|
-| `docs/PRD.md` 부재 | `ls` 실패 | fail loud + "$prd 먼저" 안내 후 종료 |
+| `harness/PRD.md` 부재 | `ls` 실패 | fail loud + "$prd 먼저" 안내 후 종료 |
 | §1 ICP 섹션 부재 | 섹션 추출 결과 없음 | fail loud + "PRD §1 ICP 섹션이 필요합니다." 후 종료 |
 | §12/§14 부재 | 섹션 추출 결과 없음 | SKIP (FAIL 아님) + 커버리지에 ❌ 표시 |
 | `harness/` 부재 | `ls` 실패 | `mkdir -p harness/` 후 진행 |
@@ -392,7 +392,7 @@ CRITICAL 또는 HIGH 잔존 시:
 ## Examples
 
 ### Good Example
-**입력:** `--append` (기본값, docs/PRD.md 존재, §1·§14 있음)
+**입력:** `--append` (기본값, harness/PRD.md 존재, §1·§14 있음)
 
 **기대 동작:**
 1. PRD §1에서 ICP 조건 추출 → critical TC 후보
@@ -407,11 +407,11 @@ CRITICAL 또는 HIGH 잔존 시:
 **기대 동작:** 기존 `harness/QA_CHECKLIST.md`를 덮어쓰고 PRD 전체 재파싱
 
 ### Bad Example
-**입력:** `--append` (docs/PRD.md 없음)
+**입력:** `--append` (harness/PRD.md 없음)
 
 **기대 동작:**
 ```
-❌ 에러: docs/PRD.md 없음.
+❌ 에러: harness/PRD.md 없음.
 `$prd` (deliver 스킬) 먼저 실행하세요.
 ```
 실행 중단. TC 생성 금지.

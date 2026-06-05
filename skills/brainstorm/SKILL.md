@@ -129,7 +129,7 @@ Phase 0 Q1-Q3 답변을 인터뷰 기록 형식으로 변환해 저장한다.
    실제 사람과의 인터뷰 5건으로 교체하거나 보강하세요.
 ```
 
-**Artifact B: `docs/brainstorm-assumptions.md` (가정 목록)**
+**Artifact B: `harness/brainstorm-assumptions.md` (가정 목록)**
 
 Phase 0-1 대화에서 암묵적 가정을 추출해 4축으로 분류한다.
 
@@ -151,7 +151,7 @@ Phase 0-1 대화에서 암묵적 가정을 추출해 4축으로 분류한다.
 다음 단계: discover/assumptions 스킬로 우선순위 부여 및 실험 설계 권장
 ```
 
-**Artifact C: `docs/PRD-draft-section1.md` (§1 ICP 초안)**
+**Artifact C: `harness/PRD-draft-section1.md` (§1 ICP 초안)**
 
 Phase 0-1 대화에서 페르소나 정보를 추출해 PRD §1 구조로 변환한다.
 
@@ -171,17 +171,17 @@ Phase 0-1 대화에서 페르소나 정보를 추출해 PRD §1 구조로 변환
    deliver/prd 스킬 실행 시 §1에 이 내용을 참고해 보강하세요.
 ```
 
-파일 저장 전 `harness/` 및 `docs/` 디렉토리 존재 여부를 확인하고 없으면 생성한다.
+파일 저장 전 `harness/` 디렉토리 존재 여부를 확인하고 없으면 생성한다.
 
 파일 저장 후 요약 출력:
 
 ```
 ✅ Signal Gate Bootstrap 완료
    A. harness/pain.md 씨앗 생성 (AI 가설 — 실제 인터뷰 필요)
-   B. docs/brainstorm-assumptions.md 가정 목록 생성
-   C. docs/PRD-draft-section1.md §1 ICP 초안 생성
+   B. harness/brainstorm-assumptions.md 가정 목록 생성
+   C. harness/PRD-draft-section1.md §1 ICP 초안 생성
 
-다음 단계: deliver/prd 를 실행하면 위 초안을 참고해 15섹션 PRD를 작성합니다.
+다음 단계: deliver/prd 를 실행하면 위 초안을 참고해 harness/PRD.md 15섹션 PRD를 작성합니다.
 발견 단계를 더 깊이 하려면: discover/opp-tree 를 먼저 실행하세요.
 ```
 
@@ -193,7 +193,7 @@ Phase 0-1 대화에서 페르소나 정보를 추출해 PRD §1 구조로 변환
 |---|---|---|
 | Phase 0 답변이 너무 추상적 | 페르소나 미특정, workaround 없음 | WARN 출력 후 계속 진행 (강제 차단 아님) |
 | Phase 1에서 접근 방식 합의 실패 | 사용자가 어떤 접근도 선택 안 함 | "지금 결정하지 않아도 됩니다. PRD에서 §4 결정 옵션으로 다시 탐색할 수 있습니다." |
-| harness/ 디렉토리 없음 | mkdir 필요 | `mkdir -p harness docs` 후 진행 |
+| harness/ 디렉토리 없음 | mkdir 필요 | `mkdir -p harness` 후 진행 |
 | Phase 2 artifact 생성 시 기존 파일 있음 | 파일 존재 확인 | 덮어쓰기 전 사용자에게 확인 |
 
 ---
@@ -221,8 +221,8 @@ Phase 2 완료 시:
 ```
 Signal Gate Bootstrap 완료:
   harness/pain.md ✅
-  docs/brainstorm-assumptions.md ✅
-  docs/PRD-draft-section1.md ✅
+  harness/brainstorm-assumptions.md ✅
+  harness/PRD-draft-section1.md ✅
 
 다음: deliver/prd [제품명]
 ```
