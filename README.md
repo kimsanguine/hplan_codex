@@ -142,6 +142,9 @@ Verification commands:
 
 ```bash
 python3 scripts/validate_agents.py
+python3 scripts/cogs_sentinel.py --json
+python3 -m unittest discover -s tests
+bash -n scripts/setup.sh scripts/track-probe.sh
 bash scripts/setup.sh --help
 HPLAN_CODEX_SOURCE_DIR="$PWD" bash scripts/setup.sh --dir="$(mktemp -d)"
 printf '%s\n' '{"tool_name":"write_file","tool_input":{"file_path":"noop","content":"a\nb\n"}}' | bash scripts/track-probe.sh

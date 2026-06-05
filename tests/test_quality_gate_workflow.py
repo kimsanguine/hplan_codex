@@ -12,8 +12,10 @@ class QualityGateWorkflowTests(unittest.TestCase):
         workflow = WORKFLOW.read_text(encoding="utf-8")
         self.assertIn("HPLAN_CODEX_SOURCE_DIR", workflow)
         self.assertIn("scripts/setup.sh --dir=", workflow)
+        self.assertIn("scripts/cogs_sentinel.py", workflow)
         self.assertIn("scripts/generate_report.py", workflow)
         self.assertIn("scripts/decision_log.py", workflow)
+        self.assertIn("scripts/validate_agents.py", workflow)
 
 
 if __name__ == "__main__":

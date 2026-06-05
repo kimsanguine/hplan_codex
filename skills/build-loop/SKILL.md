@@ -66,7 +66,7 @@ metadata:
 - `$memory-arch`로 메모리 계층
 
 **Step 4 — PRD**
-- `$prd`로 7섹션 PRD
+- `$prd`로 15-section PRD
 - mermaid workflow + userflow 두 다이어그램 의무
 - `scripts/validate-mermaid.py`로 정합성 검증 (P0-1 게이트)
 
