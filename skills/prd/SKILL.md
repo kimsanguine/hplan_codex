@@ -1,6 +1,6 @@
 ---
 name: prd
-description: "Write a complete unified PRD covering user/JTBD/decisions/scope/agent-spec/metrics/hypotheses in 15 sections. Single source of truth for both customer-facing products and the LLM agents inside them. Replaces the older 7-section agent-only template. --mode design-shotgun reads §1+§11 from existing PRD and generates harness/design-variants/ (4 HTML variants + comparison.md)."
+description: "Write a complete unified PRD covering user/JTBD/decisions/scope/agent-spec/metrics/hypotheses in 15 sections. Single source of truth for both customer-facing products and the LLM agents inside them. Use this as the current 15-section PRD template. --mode design-shotgun reads §1+§11 from existing PRD and generates harness/design-variants/ (4 HTML variants + comparison.md)."
 metadata:
   short-description: "고객 제품 + 내부 에이전트 통합 15-section PRD 작성"
   plugin: deliver
