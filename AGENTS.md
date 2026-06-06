@@ -79,6 +79,8 @@ $brainstorm → $socratic-question → $opp-tree → $assumptions → $cost-sim 
 
 ### All 28 Skills
 
+For canonical `available`, `planned`, and `adapter-dependent` status, see `skills/ROUTING_REGISTRY.md`.
+
 | Plugin | Skills |
 |---|---|
 | hplan | `$brainstorm` `$evidence-rubric` `$decision-log` `$exclusions` `$ost` |
@@ -165,7 +167,9 @@ Before proceeding to build, 4 evidence files must exist in `harness/`:
 | `competitors.md` | Top 3 alternatives analyzed |
 
 Run `$evidence-rubric` to score your evidence (0-100 points).
-Score ≥ 60 → `GO`. Score < 60 → `INVESTIGATE` or `HOLD`.
+`GO` / `build` requires score ≥ 75 plus mandatory economic pain, 2+ real interview lines, and the required real-evidence files. Score ≥ 55 without all mandatory `GO` conditions → `INVESTIGATE` / `interview`; 35-54 → `PIVOT`; <35 → `HOLD`.
+
+Use `docs/SIGNAL_GATE_SCHEMA.md` as the canonical evidence schema. Evidence marked `ai_generated_seed` is allowed only as discovery scaffolding and scores 0; it must not be counted as real pain, market, competitor, or COGS evidence for a `GO` decision.
 
 ---
 
@@ -223,7 +227,7 @@ bash scripts/track-probe.sh
 ```
 
 Currently executable: `$skill-installer`, `bash scripts/setup.sh`, `bash scripts/track-probe.sh`, and `python3 scripts/validate_agents.py`.
-Planned or adapter-dependent: `$agent-gtm`, `$build-or-buy`, `$instruction`, `$respect`, `$ui-validate`, `$weekly-rollup`, and automatic file-based hook registration.
+Planned or adapter-dependent references are maintained in `skills/ROUTING_REGISTRY.md`.
 
 Verification commands:
 

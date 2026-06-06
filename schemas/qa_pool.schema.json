@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/kimsanguine/hplan_codex/schemas/qa_pool.schema.json",
+  "title": "hplan QA Pool",
+  "type": "object",
+  "required": ["schema_version", "interview_evidence_verified", "dev_roles", "test_cases"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0"
+    },
+    "interview_evidence_verified": {
+      "type": "boolean"
+    },
+    "dev_roles": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "test_cases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "persona", "scenario", "expected_signal"],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "persona": {
+            "type": "string"
+          },
+          "scenario": {
+            "type": "string"
+          },
+          "expected_signal": {
+            "type": "string"
+          },
+          "priority": {
+            "type": "string",
+            "enum": ["P0", "P1", "P2", "P3"]
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

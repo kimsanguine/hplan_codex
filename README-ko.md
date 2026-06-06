@@ -6,6 +6,7 @@ Codex CLI용 PM Build Gate. AI 에이전트 코딩에 구조화된 의사결정 
 
 [![skills](https://img.shields.io/badge/skills-28-blue)](skills/)
 [![plugins](https://img.shields.io/badge/plugins-5-green)](skills/)
+[![Codex CLI](https://img.shields.io/badge/Codex%20CLI-0.130.0+-black)](https://developers.openai.com/codex)
 [![license](https://img.shields.io/badge/license-MIT-lightgrey)](LICENSE)
 
 ---
@@ -70,27 +71,35 @@ cp -R hplan_codex/skills/* "${CODEX_HOME:-$HOME/.codex}/skills/"
 cp -r hplan_codex/harness/ ./harness/
 cp -r hplan_codex/scripts/ ./scripts/
 cp hplan_codex/AGENTS.md ./AGENTS.md
-# 선택: config 예시를 전역 Codex 설정으로 복사
-cp hplan_codex/config.toml.example ~/.codex/config.toml   # 이후 값 편집
+# 선택: config 예시를 보관한 뒤, 기존 전역 설정에 필요한 값만 수동 병합
+mkdir -p "${CODEX_HOME:-$HOME/.codex}"
+cp -n hplan_codex/config.toml.example "${CODEX_HOME:-$HOME/.codex}/config.toml.example"
 ```
 
 ---
 
-## 빠른 시작
+## 첫 10분 성공 경로
 
-설치 후, 프로젝트 폴더에서:
+설치 후 프로젝트 폴더에서 첫 유용한 루프를 확인합니다:
 
-```
-$brainstorm "아이디어"
-```
+1. Codex CLI에서 프로젝트를 엽니다.
+2. `$brainstorm "아이디어"`를 실행합니다.
+3. 첫 WHETHER 판단(`GO`, `INVESTIGATE`, `HOLD`)을 기록합니다.
+4. 아이디어를 계속 볼 가치가 있으면 `harness/pain.md`에 AI 생성 seed가 아닌 실제 증거를 추가합니다.
+5. `$evidence-rubric`을 실행하고 점수와 부족한 증거를 남깁니다.
 
-→ 5분 안에 "만들어야 하는가" 판단이 나옵니다.
+첫 성공 기준: 10분 안에 build/no-build 판단과 다음 증거 액션이 문서화됩니다.
 
 **전체 워크플로우:**
 
 ```
 $brainstorm → $socratic-question → $opp-tree → $prd → $conductor
 ```
+
+참고 문서:
+- [용어집](docs/GLOSSARY.md)
+- [예시 케이스 스터디](docs/CASE_STUDIES.md)
+- [기여 가이드](CONTRIBUTING.md)
 
 ---
 
@@ -118,19 +127,23 @@ hplan_codex는 Codex CLI 샌드박스 안에서 실행됩니다. Codex 0.130.0�
 
 샌드박스 모드는 Codex CLI 세션 또는 설정에서 지정합니다. hplan_codex의 빌드 단계 스킬은 `workspace-write`를 전제로 합니다.
 
-> Codex CLI 0.130.0은 file-based hook을 지원하지 않습니다. `scripts/track-probe.sh`는 `bash scripts/track-probe.sh`로 직접 실행하거나 Codex automation에 연결할 수 있는 수동 스프린트 추적 프로브로 제공됩니다.
+> Codex CLI 0.130.0은 파일 기반 hook을 지원하지 않습니다. `scripts/track-probe.sh`는 `bash scripts/track-probe.sh`로 직접 실행하거나 Codex automation에 연결할 수 있는 수동 스프린트 추적 프로브로 제공됩니다.
 
 ## 현재 상태 & 검증
 
 현재 실행 가능:
 - `$skill-installer`를 통한 스킬 설치
-- `bash scripts/setup.sh`를 통한 harness/script bootstrap
-- `bash scripts/track-probe.sh` 수동 probe 실행
+- `bash scripts/setup.sh`를 통한 harness/script 부트스트랩
+- `bash scripts/track-probe.sh` 수동 프로브 실행
 - `python3 scripts/validate_agents.py` 정적 스킬/문서 검증
 
-예정 또는 adapter 의존:
-- `$agent-gtm`, `$build-or-buy`, `$instruction`, `$respect`, `$ui-validate`, `$weekly-rollup`
-- Codex CLI file-based hook 자동 등록
+예정 또는 adapter 의존 기능은
+[skills/ROUTING_REGISTRY.md](skills/ROUTING_REGISTRY.md)에서 관리합니다.
+
+Canonical 참조:
+- PRD 번호 계약: [docs/PRD_SECTION_MAP.md](docs/PRD_SECTION_MAP.md)
+- Signal Gate 증거 schema: [docs/SIGNAL_GATE_SCHEMA.md](docs/SIGNAL_GATE_SCHEMA.md)
+- 스킬 상태 registry: [skills/ROUTING_REGISTRY.md](skills/ROUTING_REGISTRY.md)
 
 검증 명령:
 
@@ -141,7 +154,10 @@ python3 -m unittest discover -s tests
 bash -n scripts/setup.sh scripts/track-probe.sh
 bash scripts/setup.sh --help
 HPLAN_CODEX_SOURCE_DIR="$PWD" bash scripts/setup.sh --dir="$(mktemp -d)"
+mkdir -p .track
+printf '%s\n' track-smoke > .track/current_task
 printf '%s\n' '{"tool_name":"write_file","tool_input":{"file_path":"noop","content":"a\nb\n"}}' | bash scripts/track-probe.sh
+test -s .track/actual_log.jsonl
 ```
 
 ---

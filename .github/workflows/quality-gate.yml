@@ -44,5 +44,14 @@ jobs:
           test -f "$tmpdir/scripts/validate_agents.py"
           test -f "$tmpdir/scripts/track-probe.sh"
 
+      - name: Smoke test track probe
+        run: |
+          tmpdir="$(mktemp -d)"
+          mkdir -p "$tmpdir/.track"
+          printf '%s\n' P1-ci-smoke > "$tmpdir/.track/current_task"
+          printf '%s\n' '{"tool_name":"write_file","tool_input":{"file_path":"harness/PRD.md","content":"one\ntwo\n"}}' | (cd "$tmpdir" && bash "$GITHUB_WORKSPACE/scripts/track-probe.sh")
+          test -s "$tmpdir/.track/actual_log.jsonl"
+          grep -q '"event": "tool_call"' "$tmpdir/.track/actual_log.jsonl"
+
       - name: Check shell script syntax
         run: bash -n scripts/setup.sh scripts/track-probe.sh

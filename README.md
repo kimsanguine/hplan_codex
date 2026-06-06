@@ -8,6 +8,7 @@ PM Build Gate for Codex CLI. Structured decision-making framework for AI-assiste
 
 [![skills](https://img.shields.io/badge/skills-28-blue)](skills/)
 [![plugins](https://img.shields.io/badge/plugins-5-green)](skills/)
+[![Codex CLI](https://img.shields.io/badge/Codex%20CLI-0.130.0+-black)](https://developers.openai.com/codex)
 [![license](https://img.shields.io/badge/license-MIT-lightgrey)](LICENSE)
 
 ---
@@ -88,27 +89,35 @@ cp -R hplan_codex/skills/* "${CODEX_HOME:-$HOME/.codex}/skills/"
 cp -r hplan_codex/harness/ ./harness/
 cp -r hplan_codex/scripts/ ./scripts/
 cp hplan_codex/AGENTS.md ./AGENTS.md
-# optional: copy the config example to your global Codex config
-cp hplan_codex/config.toml.example ~/.codex/config.toml   # then edit
+# optional: keep a config example for manual merge; do not overwrite your live config
+mkdir -p "${CODEX_HOME:-$HOME/.codex}"
+cp -n hplan_codex/config.toml.example "${CODEX_HOME:-$HOME/.codex}/config.toml.example"
 ```
 
 ---
 
-## Quick Start
+## First 10 Minute Success Path
 
-After installing (above), from your project folder:
+After installing (above), confirm the first useful loop from your project folder:
 
-```
-$brainstorm "your idea here"
-```
+1. Open the project in Codex CLI.
+2. Run `$brainstorm "your idea here"`.
+3. Capture the first WHETHER judgment: `GO`, `INVESTIGATE`, or `HOLD`.
+4. If the idea is still alive, create or update `harness/pain.md` with real evidence, not AI-generated seed text.
+5. Run `$evidence-rubric` and keep the score plus missing-evidence notes.
 
-→ a "should we build this" judgment in ~5 minutes.
+Expected first success: a documented build/no-build judgment within 10 minutes, plus the next evidence action.
 
 **Full workflow:**
 
 ```
 $brainstorm → $socratic-question → $opp-tree → $prd → $conductor
 ```
+
+Reference docs:
+- [Glossary](docs/GLOSSARY.md)
+- [Illustrative case studies](docs/CASE_STUDIES.md)
+- [Contributing](CONTRIBUTING.md)
 
 ---
 
@@ -134,9 +143,13 @@ Currently executable:
 - Manual probe invocation via `bash scripts/track-probe.sh`
 - Static skill/doc validation via `python3 scripts/validate_agents.py`
 
-Planned or adapter-dependent:
-- `$agent-gtm`, `$build-or-buy`, `$instruction`, `$respect`, `$ui-validate`, `$weekly-rollup`
-- Automatic file-based hook registration in Codex CLI
+Planned or adapter-dependent capabilities are tracked in
+[skills/ROUTING_REGISTRY.md](skills/ROUTING_REGISTRY.md).
+
+Canonical references:
+- PRD numbering contract: [docs/PRD_SECTION_MAP.md](docs/PRD_SECTION_MAP.md)
+- Signal Gate evidence schema: [docs/SIGNAL_GATE_SCHEMA.md](docs/SIGNAL_GATE_SCHEMA.md)
+- Skill status registry: [skills/ROUTING_REGISTRY.md](skills/ROUTING_REGISTRY.md)
 
 Verification commands:
 
@@ -147,7 +160,10 @@ python3 -m unittest discover -s tests
 bash -n scripts/setup.sh scripts/track-probe.sh
 bash scripts/setup.sh --help
 HPLAN_CODEX_SOURCE_DIR="$PWD" bash scripts/setup.sh --dir="$(mktemp -d)"
+mkdir -p .track
+printf '%s\n' track-smoke > .track/current_task
 printf '%s\n' '{"tool_name":"write_file","tool_input":{"file_path":"noop","content":"a\nb\n"}}' | bash scripts/track-probe.sh
+test -s .track/actual_log.jsonl
 ```
 
 ---

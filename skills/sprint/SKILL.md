@@ -49,8 +49,8 @@ metadata:
 ### Route to Other Skills When
 - 비용 시뮬레이션 (lognormal) → `$cost-sim`
 - WBS 30 task 초과 → `$conductor`로 태스크 순차 실행
-- UI 디자인 확인 → `$ui-validate` [예정]
-- 주간 운영 회고 → `$weekly-rollup` [예정]
+- UI 디자인 확인 → `$ui-validate` [adapter-dependent]
+- 주간 운영 회고 → `$weekly-rollup` [planned]
 
 ### Boundary Checks
 - PRD vague (Section 6 누락) → fail loud, PRD 보강 요청

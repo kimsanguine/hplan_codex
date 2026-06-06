@@ -65,10 +65,10 @@ PRD에 명시된 타겟 플랫폼 기준:
 - **배포 전 최종 QA 라운드** — `--mode adversarial`: `harness/QA_POOL.json`이 존재하고 실 사용자 페르소나 + 개발 리뷰어 관점 검수가 필요할 때
 
 ### Route to Other Skills When
-- UI 런타임 검증 → `$ui-validate` [예정]
+- UI 런타임 검증 → `$ui-validate` [adapter-dependent]
 - ship 직전 전체 게이트 → `$respect --mode checkpoint` [adapter-dependent]
 - PRD 작성 (§15 QA Pool 포함) → `$prd`
-- 페르소나 구성 → `$interview-synthesis` [예정] (PERSONA_SPECS.json 생성)
+- 페르소나 구성 → `$interview-synthesis` [script-only] (PERSONA_SPECS.json 생성)
 
 ### Boundary Checks
 - `harness/PRD.md` 부재 → fail loud + "harness/PRD.md 없음. `$prd` (deliver 스킬, §15 QA Pool 포함) 먼저 실행하세요."

@@ -16,6 +16,8 @@ class QualityGateWorkflowTests(unittest.TestCase):
         self.assertIn("scripts/generate_report.py", workflow)
         self.assertIn("scripts/decision_log.py", workflow)
         self.assertIn("scripts/validate_agents.py", workflow)
+        self.assertIn("Smoke test track probe", workflow)
+        self.assertIn(".track/actual_log.jsonl", workflow)
 
 
 if __name__ == "__main__":

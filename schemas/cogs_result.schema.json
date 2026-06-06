@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/kimsanguine/hplan_codex/schemas/cogs_result.schema.json",
+  "title": "hplan COGS Result",
+  "type": "object",
+  "required": [
+    "generated",
+    "provider",
+    "model",
+    "inputs",
+    "per_call_cost_usd",
+    "monthly_cogs_per_paid_user_usd",
+    "gross_margin",
+    "decision",
+    "reasons"
+  ],
+  "properties": {
+    "generated": {
+      "type": "string",
+      "format": "date"
+    },
+    "provider": {
+      "type": "string"
+    },
+    "model": {
+      "type": "string"
+    },
+    "decision": {
+      "type": "string",
+      "enum": ["GREEN", "CONDITIONAL_GO", "RED"]
+    },
+    "status": {
+      "type": "string",
+      "enum": ["GREEN", "CONDITIONAL_GO", "RED", "UNKNOWN"],
+      "description": "Optional compatibility alias used by stakeholder-update docs."
+    },
+    "inputs": {
+      "type": "object"
+    },
+    "per_call_cost_usd": {
+      "type": "object",
+      "required": ["p50", "p90"],
+      "properties": {
+        "p50": {
+          "type": "number",
+          "minimum": 0
+        },
+        "p90": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "monthly_cogs_per_paid_user_usd": {
+      "type": "object",
+      "required": ["p50", "p90", "worst"],
+      "properties": {
+        "p50": {
+          "type": "number",
+          "minimum": 0
+        },
+        "p90": {
+          "type": "number",
+          "minimum": 0
+        },
+        "worst": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "gross_margin": {
+      "type": "object",
+      "required": ["p50", "p90", "with_free_user_load"],
+      "properties": {
+        "p50": {
+          "type": "number"
+        },
+        "p90": {
+          "type": "number"
+        },
+        "with_free_user_load": {
+          "type": "number"
+        }
+      },
+      "additionalProperties": false
+    },
+    "reasons": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "mode": {
+      "type": "string",
+      "enum": ["predict", "realtime"]
+    },
+    "realtime": {
+      "type": "object"
+    }
+  },
+  "additionalProperties": false
+}

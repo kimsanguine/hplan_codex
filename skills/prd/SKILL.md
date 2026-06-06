@@ -18,6 +18,8 @@ metadata:
 
 ## Unified PRD Template — 15 Sections
 
+Canonical section numbering is defined in `docs/PRD_SECTION_MAP.md`. In short: §1 ICP, §7 Agent Role, §11 Output Specification, §12 Metrics, §14 Failure/HITL, §15 QA Pool.
+
 ## Core Goal
 
 - 고객(인간) 대상 제품과 그 안의 LLM 에이전트 사양을 **단일 PRD 15-section**으로 통합
@@ -39,19 +41,19 @@ metadata:
 
 ### Route to Other Skills When
 
-현재 이 repo에서 실행 가능한 스킬은 이름만 표기한다. 아직 이 repo에 없거나 외부 adapter가 필요한 항목은 `[예정]` 또는 `[adapter-dependent]`로 표시한다.
+현재 이 repo에서 실행 가능한 스킬은 이름만 표기한다. 아직 이 repo에 없거나 외부 adapter가 필요한 항목은 `skills/ROUTING_REGISTRY.md`의 status에 맞춰 `[planned]` 또는 `[adapter-dependent]`로 표시한다.
 
 - **배포 전 QA 라운드** → `$qa-checklist --mode adversarial` (PRD §15 QA Pool + PERSONA_SPECS 기반 동적 에이전트 구성)
-- **ICP·beachhead 정의** → `$agent-gtm` [예정]으로 라우팅 후 Section 1에 주입
-- **JTBD·Switch Interview** → `$agent-gtm` [예정]으로 라우팅 후 Section 2에 주입
-- **결정 옵션 매트릭스** → `$build-or-buy` [예정] (6축) + `$orchestration` (4패턴) + `$hitl` (5레벨) → Section 4
+- **ICP·beachhead 정의** → `$agent-gtm` [planned]으로 라우팅 후 Section 1에 주입
+- **JTBD·Switch Interview** → `$agent-gtm` [planned]으로 라우팅 후 Section 2에 주입
+- **결정 옵션 매트릭스** → `$build-or-buy` [planned] (6축) + `$orchestration` (4패턴) + `$hitl` (5레벨) → Section 4
 - **제외사항 자동 인용** → `$exclusions` 레지스트리 fuzzy match → Section 5
 - **MVP 비용 시뮬레이션** → `$cost-sim` (lognormal p50/p90) → Section 6
-- **Instruction 7요소 상세 설계** → `$instruction` [예정] → Section 7 보강
+- **Instruction 7요소 상세 설계** → `$instruction` [planned] → Section 7 보강
 - **OKR 정의** → `$metrics-design --step okr` (dual-axis) → Section 12
 - **가설 분해** → `$assumptions` (4축) → Section 13
-- **신뢰성·SLO** → `$reliability` [예정] → Section 14
-- **Multi-ecosystem export** → `$handoff` [예정] (Spec-Kit / Kiro / GStack / Codex CLI)
+- **신뢰성·SLO** → `$reliability` [planned] → Section 14
+- **Multi-ecosystem export** → `$handoff` [planned] (Spec-Kit / Kiro / GStack / Codex CLI)
 - **사용자 인터페이스가 있는 LLM 에이전트 (UI/UX 강제)** → `$respect --mode brief` [adapter-dependent] (RESPECT.md 디자인 시그니처) → Section 11 출력 사양 보강
 - design-shotgun 변형 선택 후 TC 자동 생성 → `$qa-checklist`
 
@@ -72,11 +74,11 @@ metadata:
 |----------|------|------|
 | ICP가 "20-50대 일반인" 같이 추상적 | Section 1 검토 시 beachhead 5-criteria 통과 못 함 | `$agent-gtm` 라우팅으로 ICP 재정의 |
 | JTBD가 솔루션 어조 ("편하게 X 할 수 있다") | Section 2가 Job이 아닌 Feature 설명 | Switch Interview 4 Forces (Push·Pull·Anxiety·Habit)로 재작성 |
-| 결정 옵션 매트릭스가 옵션 1개만 | Section 4에 옵션 A/B/C 중 하나만 | 최소 2개 옵션 + 트레이드오프 강제. `$build-or-buy` [예정] 호출 |
+| 결정 옵션 매트릭스가 옵션 1개만 | Section 4에 옵션 A/B/C 중 하나만 | 최소 2개 옵션 + 트레이드오프 강제. `$build-or-buy` [planned] 호출 |
 | 제외사항 비어 있음 | Section 5 빈 칸 | "절대 안 만드는 것 5개" 강제 입력. `$exclusions` 자동 인용 |
 | MVP·Full vision 분리 없음 | Section 6에 Now/Next/Later 구분 없음 | 3-tier 분할 + 각 tier에 cogs p50/p90 첨부 |
 | Anti-Goals 없음 | Section 7에 "하면 안 되는 것" 없음 | 최소 3개 강제. 도메인 룰·hallucination 정책·법적 책임 영역 포함 |
-| Tools 호출 제한 없음 | Section 8 일부 행에 "호출 제한" 컬럼 빈 칸 | `$instruction` [예정] 라우팅으로 도구별 상세 조건 정의 |
+| Tools 호출 제한 없음 | Section 8 일부 행에 "호출 제한" 컬럼 빈 칸 | `$instruction` [planned] 라우팅으로 도구별 상세 조건 정의 |
 | Trigger 모호 ("필요 시") | Section 10 트리거 유형 미지정 | Cron/Event/Manual/Pipeline 중 명시적 선택 |
 | Output 예시 없음 | Section 11 출력 샘플 칸 빈 칸 | 실제 출력 1개 작성 강제 (Markdown / JSON / Plain text) |
 | 성공 지표가 추정·동기 부재 | Section 12에 측정·기한 없음 | `$metrics-design --step okr` 라우팅으로 Dual-axis 재작성 |
@@ -139,7 +141,7 @@ ICP (Ideal Customer Profile):
 - 도달 채널 (verified):
 ```
 
-> 자동 호출: `$agent-gtm` [예정] beachhead 5-criteria 결과 inject (부재 시 ICP 1줄 + 페르소나 2~3개 직접 작성)
+> 자동 호출: `$agent-gtm` [planned] beachhead 5-criteria 결과 inject (부재 시 ICP 1줄 + 페르소나 2~3개 직접 작성)
 
 **이해관계자 영향도 매트릭스 (조직 도입 시 선택):**
 
@@ -170,7 +172,7 @@ ICP (Ideal Customer Profile):
 - Habit (기존 습관 관성):
 ```
 
-> 자동 호출: `$agent-gtm` [예정] Switch Interview 산출물 (부재 시 Push/Pull/Anxiety/Habit 4 Forces로 1~3개 Job 직접 작성)
+> 자동 호출: `$agent-gtm` [planned] Switch Interview 산출물 (부재 시 Push/Pull/Anxiety/Habit 4 Forces로 1~3개 Job 직접 작성)
 
 ---
 
@@ -202,7 +204,7 @@ ICP (Ideal Customer Profile):
 | HITL 레벨 | L2 (suggest) | L3 (approve) | L4 (autonomous) | L3 | 안전성 vs 속도 | 5명 사랑 후 |
 ```
 
-> 자동 호출: `$build-or-buy` [예정] + `$orchestration` + `$hitl`
+> 자동 호출: `$build-or-buy` [planned] + `$orchestration` + `$hitl`
 
 ---
 
@@ -268,7 +270,7 @@ Anti-Goals (하면 안 되는 것, 최소 3개):
 3. [법적 책임 — 예: 의료 진단 대체 금지]
 ```
 
-> 자동 호출: `$instruction` [예정] 7요소 상세 설계 (부재 시 Anti-Goals 3개 직접 작성)
+> 자동 호출: `$instruction` [planned] 7요소 상세 설계 (부재 시 Anti-Goals 3개 직접 작성)
 
 ---
 
@@ -697,21 +699,21 @@ $prd [제품명] 먼저 실행하세요.
 You are helping write a complete **Unified PRD** for the product or agent name provided as input.
 
 **Phase 1** — Section 1-3 (사람·문제·가치)
-- Section 1: ICP·페르소나 — `$agent-gtm` [예정] (beachhead 5-criteria; 부재 시 ICP 1줄 + 페르소나 2~3개 직접 작성)
-- Section 2: JTBD·Switch 4 Forces — `$agent-gtm` [예정] (부재 시 Push/Pull/Anxiety/Habit 4 Forces로 1~3개 Job 직접 작성)
+- Section 1: ICP·페르소나 — `$agent-gtm` [planned] (beachhead 5-criteria; 부재 시 ICP 1줄 + 페르소나 2~3개 직접 작성)
+- Section 2: JTBD·Switch 4 Forces — `$agent-gtm` [planned] (부재 시 Push/Pull/Anxiety/Habit 4 Forces로 1~3개 Job 직접 작성)
 - Section 3: 핵심 문제 + 10배 가치 (정량)
 
 🔍 Checkpoint 1: User 검증 — "ICP·JTBD·문제가 5명 사랑 인터뷰에 그대로 쓸 수 있는가?"
 
 **Phase 2** — Section 4-6 (결정·범위)
-- Section 4: 결정 옵션 매트릭스 — `$build-or-buy` [예정] + `$orchestration` + `$hitl` (부재 시 옵션 2개 × 5개 결정 항목 직접 작성)
+- Section 4: 결정 옵션 매트릭스 — `$build-or-buy` [planned] + `$orchestration` + `$hitl` (부재 시 옵션 2개 × 5개 결정 항목 직접 작성)
 - Section 5: 제외사항 — `$exclusions` 자동 인용
 - Section 6: Now/Next/Later — `$cost-sim` (cogs p50/p90)
 
 🔍 Checkpoint 2: User 검증 — "MVP가 60일 안에 가능한가? cogs가 1인 빌더 감당 가능한가?"
 
 **Phase 3** — Section 7-11 (에이전트·실행 사양)
-- Section 7: Role + Anti-Goals — `$instruction` [예정] (부재 시 Anti-Goals 3개 직접 작성)
+- Section 7: Role + Anti-Goals — `$instruction` [planned] (부재 시 Anti-Goals 3개 직접 작성)
 - Section 8: Tools & Integrations + 호출 제한 mandatory
 - Section 9: 3-tier Memory (Working / Long-term / Procedural)
 - Section 10: Trigger & Execution Flow Step-by-Step

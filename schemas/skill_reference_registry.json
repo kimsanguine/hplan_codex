@@ -1,0 +1,68 @@
+{
+  "references": {
+    "agent-gtm": {
+      "status": "planned",
+      "reason": "Future GTM/beachhead skill referenced by PRD flow."
+    },
+    "ask-team": {
+      "status": "external",
+      "reason": "Team communication adapter outside this skill pack."
+    },
+    "build-or-buy": {
+      "status": "planned",
+      "reason": "Future deterministic build-vs-buy gate referenced by PRD/build-loop flows."
+    },
+    "handoff": {
+      "status": "planned",
+      "reason": "Future multi-ecosystem export route."
+    },
+    "harness-design": {
+      "status": "planned",
+      "reason": "Future harness composition/build execution route."
+    },
+    "instruction": {
+      "status": "planned",
+      "reason": "Future instruction-design helper referenced by PRD Section 7."
+    },
+    "interview-synthesis": {
+      "status": "script-only",
+      "reason": "Backed by scripts/interview_synthesis.py rather than a skill directory."
+    },
+    "parallel-team": {
+      "status": "planned",
+      "reason": "Future parallel worktree/team decomposition route."
+    },
+    "reliability": {
+      "status": "planned",
+      "reason": "Future reliability/SLO helper referenced by PRD Section 14."
+    },
+    "respect": {
+      "status": "adapter-dependent",
+      "reason": "Requires external RESPECT/UI validation adapter."
+    },
+    "skill": {
+      "status": "external",
+      "reason": "Documentation shorthand for the generic skill reference concept."
+    },
+    "skill-installer": {
+      "status": "external",
+      "reason": "Installed Codex skill used to install hplan_codex, not shipped in this repo."
+    },
+    "skill-name": {
+      "status": "external",
+      "reason": "Documentation placeholder for arbitrary skill invocation syntax."
+    },
+    "ticket-bridge": {
+      "status": "external",
+      "reason": "Ticketing/status adapter outside this skill pack."
+    },
+    "ui-validate": {
+      "status": "adapter-dependent",
+      "reason": "Requires a UI runtime validation adapter or browser evidence workflow."
+    },
+    "weekly-rollup": {
+      "status": "planned",
+      "reason": "Future weekly operations rollup route."
+    }
+  }
+}

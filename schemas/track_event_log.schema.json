@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/kimsanguine/hplan_codex/schemas/track_event_log.schema.json",
+  "title": "hplan Track Event Log Entry",
+  "type": "object",
+  "required": ["ts", "task", "event", "tool", "file", "loc_delta", "source"],
+  "properties": {
+    "ts": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "task": {
+      "type": "string"
+    },
+    "event": {
+      "type": "string",
+      "enum": ["tool_call", "task_start", "complete", "blocker"]
+    },
+    "tool": {
+      "type": "string"
+    },
+    "file": {
+      "type": "string"
+    },
+    "loc_delta": {
+      "type": "integer"
+    },
+    "source": {
+      "type": "string",
+      "enum": ["probe", "conductor", "sprint", "manual"]
+    },
+    "exit_code": {
+      "type": "integer"
+    }
+  },
+  "additionalProperties": true
+}

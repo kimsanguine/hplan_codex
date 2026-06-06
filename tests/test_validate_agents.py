@@ -92,6 +92,87 @@ class ValidateAgentsTests(unittest.TestCase):
             self.assertIn("Missing script reference", result.stdout)
             self.assertIn("scripts/missing_bare.py", result.stdout)
 
+    def test_missing_script_reference_in_docs_fails(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self.write_skill(root, "demo", "demo", "Call `$demo`.")
+            docs = root / "docs"
+            docs.mkdir()
+            (docs / "BAD.md").write_text(
+                "Run `python3 scripts/not_real.py` before shipping.\n",
+                encoding="utf-8",
+            )
+
+            result = self.run_validator(root)
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("Missing script reference", result.stdout)
+            self.assertIn("docs/BAD.md", result.stdout)
+            self.assertIn("scripts/not_real.py", result.stdout)
+
+    def test_available_skill_reference_passes_without_registry(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self.write_skill(root, "demo", "demo", "Call `$demo` from docs.")
+            (root / "README.md").write_text("Start with `$demo`.\n", encoding="utf-8")
+
+            result = self.run_validator(root)
+
+            self.assertEqual(result.returncode, 0, result.stdout)
+
+    def test_unknown_skill_reference_requires_registry_entry(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self.write_skill(root, "demo", "demo", "Route to `$future-skill`.")
+
+            result = self.run_validator(root)
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("Unregistered skill reference", result.stdout)
+            self.assertIn("$future-skill", result.stdout)
+
+    def test_registered_planned_skill_reference_passes(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self.write_skill(root, "demo", "demo", "Route to `$future-skill`.")
+            registry = root / "schemas" / "skill_reference_registry.json"
+            registry.parent.mkdir(parents=True)
+            registry.write_text(
+                dedent(
+                    """\
+                    {
+                      "references": {
+                        "future-skill": {
+                          "status": "planned",
+                          "reason": "Roadmap placeholder."
+                        }
+                      }
+                    }
+                    """
+                ),
+                encoding="utf-8",
+            )
+
+            result = self.run_validator(root)
+
+            self.assertEqual(result.returncode, 0, result.stdout)
+
+    def test_registry_status_must_be_explicit_allowed_value(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self.write_skill(root, "demo", "demo", "Route to `$future-skill`.")
+            registry = root / "schemas" / "skill_reference_registry.json"
+            registry.parent.mkdir(parents=True)
+            registry.write_text(
+                '{"references":{"future-skill":{"status":"maybe"}}}\n',
+                encoding="utf-8",
+            )
+
+            result = self.run_validator(root)
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("Invalid registry status", result.stdout)
+
 
 if __name__ == "__main__":
     unittest.main()

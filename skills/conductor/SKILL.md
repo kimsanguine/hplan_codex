@@ -10,6 +10,8 @@ metadata:
 
 구현 플랜(PRD path 또는 delivery brief)을 입력으로 받아 실행한다.
 
+PRD section numbering follows `docs/PRD_SECTION_MAP.md`: §1 ICP, §7 Agent Role, §11 Output Specification, §12 Metrics, §14 Failure/HITL.
+
 ---
 
 ## Core Goal
@@ -96,7 +98,7 @@ conductor는 각 태스크마다 Codex가 **fresh 서브에이전트를 스폰**
     있으면 → 계속
   - harness/implementation-plan.md 존재 확인
     있으면 → 기존 플랜 로드 (재생성 없음)
-    없으면 → PRD §7(성공지표) + §11(Output Spec) 두 섹션 읽기
+    없으면 → PRD §1(ICP) + §7(Agent Role) + §11(Output Spec) + §12(Metrics) + §14(Failure/HITL) 읽기
              → 태스크 단위 구현 플랜 생성
              → harness/implementation-plan.md 저장
              형식:
@@ -180,7 +182,7 @@ conductor는 각 태스크마다 Codex가 **fresh 서브에이전트를 스폰**
      ```
 2. `harness/implementation-plan.md` 존재 확인
    - 있으면 → 로드 후 Step 1로 이동 (재생성 생략)
-   - 없으면 → PRD §7(성공지표 및 추적 지표), §11(Output Spec) 두 섹션 추출
+   - 없으면 → PRD §1(ICP), §7(Agent Role), §11(Output Spec), §12(Metrics), §14(Failure/HITL) 섹션 추출
 3. 추출된 섹션을 기반으로 태스크 단위 구현 플랜 생성:
    - 각 태스크는 `T1`, `T2`, … 번호 + 제목 + 담당 파일 범위 + `depends_on` 필드 포함
    - `depends_on: []` = 독립 태스크 (--mode sprint 병렬 대상)
@@ -303,10 +305,12 @@ TEST_FILES=$(find . -name "*.test.*" -o -name "test_*.py" 2>/dev/null | wc -l)
 **전처리: PRD 섹션 로드**
 1. `harness/PRD.md` Read (Step 0에서 이미 로드됐으므로 캐시 활용)
 2. 다음 3섹션 추출:
-   - §3 ICP 정의 (핵심 고객 + 해결 문제)
+   - §1 ICP 정의 (핵심 고객 + 페르소나)
+   - §7 Agent Role + Anti-Goals
    - §11 Output Spec (출력 구조·포맷·예시)
+   - §12 Metrics (성공 지표 + cost KR)
    - §14 Failure Scenarios (실패 시나리오 목록)
-3. 구현 결과물과 3섹션을 나란히 제시해 교차 검증 수행
+3. 구현 결과물과 위 섹션을 나란히 제시해 교차 검증 수행
 
 3체크포인트를 순서대로 검증한다.
 
