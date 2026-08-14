@@ -231,6 +231,54 @@ class HplanDoctorTests(unittest.TestCase):
                 with self.subTest(artifact=artifact):
                     self.assertEqual(expected, (target / artifact).read_bytes())
 
+    def test_repair_rejects_root_docs_symlink_without_touching_external_files(self):
+        """A docs symlink must not redirect staging or replacement outside the requested root."""
+        with tempfile.TemporaryDirectory() as tmp:
+            target = Path(tmp) / "project"
+            external_docs = Path(tmp) / "external-docs"
+            self.install_fixture(target)
+            docs_original = target / "docs-original"
+            (target / "docs").rename(docs_original)
+            external_docs.mkdir()
+            external_before = {}
+            for artifact in repair.ARTIFACTS[1:]:
+                external_path = external_docs / artifact.name
+                external_path.write_bytes(f"external-{artifact.name}".encode("utf-8"))
+                external_before[external_path] = external_path.read_bytes()
+            lock_before = (target / "hplan-core.lock").read_bytes()
+            os.symlink(external_docs, target / "docs", target_is_directory=True)
+
+            success, message = repair.restore(target)
+
+            self.assertFalse(success)
+            self.assertIn("심볼릭 링크", message)
+            self.assertEqual(lock_before, (target / "hplan-core.lock").read_bytes())
+            for path, expected in external_before.items():
+                with self.subTest(path=path):
+                    self.assertEqual(expected, path.read_bytes())
+
+    def test_repair_rejects_symlinked_backup_artifact_without_touching_live_files(self):
+        """A backup artifact symlink must not be accepted as a trusted local repair source."""
+        with tempfile.TemporaryDirectory() as tmp:
+            target = Path(tmp) / "project"
+            external_matrix = Path(tmp) / "external-backup-matrix.json"
+            self.install_fixture(target)
+            backup_matrix = target / ".hplan-core-snapshot" / "docs" / "hplan-capability-matrix.json"
+            external_matrix.write_bytes(backup_matrix.read_bytes())
+            backup_matrix.rename(target / ".hplan-core-snapshot" / "docs" / "matrix-original.json")
+            os.symlink(external_matrix, backup_matrix)
+            live_before = {artifact: (target / artifact).read_bytes() for artifact in repair.ARTIFACTS}
+            external_before = external_matrix.read_bytes()
+
+            success, message = repair.restore(target)
+
+            self.assertFalse(success)
+            self.assertIn("심볼릭 링크", message)
+            self.assertEqual(external_before, external_matrix.read_bytes())
+            for artifact, expected in live_before.items():
+                with self.subTest(artifact=artifact):
+                    self.assertEqual(expected, (target / artifact).read_bytes())
+
     def test_local_source_setup_does_not_require_curl_on_path(self):
         """A local installer must not reject an otherwise complete source checkout because curl is absent."""
         with tempfile.TemporaryDirectory() as tmp:
