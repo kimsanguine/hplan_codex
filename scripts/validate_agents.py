@@ -35,6 +35,18 @@ CORE_ALIASES = {
     "router": "orchestration",
     "stakeholder-update": "ops-review",
 }
+CORE_RENDERED_FILES = [
+    "hplan-core.lock",
+    "hplan-capability-matrix.json",
+    "HPLAN_CAPABILITY_MATRIX.md",
+    "hplan-core-adapter.json",
+]
+CORE_ADAPTER_POLICY = {
+    "capability_status_source": "hplan-capability-matrix.json",
+    "native_execution_policy": "entrypoint-and-smoke-fixture-required",
+    "non_native_fallback": "fallback_artifact",
+    "external_connector_writes": "disabled",
+}
 CORE_RULE_HEADINGS = {
     "Rule 1 — Think Before Coding",
     "Rule 2 — Simplicity First",
@@ -160,6 +172,8 @@ def check_core_adapter_contract(repo_root: pathlib.Path, errors: list[str]) -> s
         errors.append("Core adapter target must be codex in lock, matrix, and adapter metadata")
     if not re.fullmatch(r"[0-9a-f]{64}", str(lock.get("source_sha256", ""))):
         errors.append("Core adapter lock must contain a SHA-256 source digest")
+    if lock.get("files") != CORE_RENDERED_FILES:
+        errors.append("Core adapter lock must list all 4 renderer artifacts")
 
     capabilities = matrix.get("capabilities")
     if not isinstance(capabilities, list) or len(capabilities) != 34:
@@ -186,10 +200,11 @@ def check_core_adapter_contract(repo_root: pathlib.Path, errors: list[str]) -> s
     if not isinstance(aliases, list) or len(aliases) != 3 or alias_map != CORE_ALIASES:
         errors.append("Core capability matrix must preserve the 3 compatibility aliases")
 
-    if adapter.get("adapter_status") != "adapter-required":
-        errors.append("Adapter metadata must declare adapter-required status")
-    if adapter.get("external_connector_boundary") != "draft-only" or adapter.get("external_connector_writes") != "disabled":
-        errors.append("Adapter metadata must keep external connector writes disabled and draft-only")
+    if adapter.get("core_version") != matrix.get("contract_version") or adapter.get("core_source_sha256") != lock.get("source_sha256"):
+        errors.append("Adapter metadata must match the rendered core version and source digest")
+    for key, value in CORE_ADAPTER_POLICY.items():
+        if adapter.get(key) != value:
+            errors.append(f"Adapter metadata must preserve core policy: {key}={value}")
 
     agents = (repo_root / "AGENTS.md").read_text(encoding="utf-8")
     if "## 9 Behavioral Rules" not in agents or not all(f"### {heading}" in agents for heading in CORE_RULE_HEADINGS):
