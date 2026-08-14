@@ -282,7 +282,7 @@ printf '%s\n' '{"tool_name":"write_file","tool_input":{"file_path":"noop","conte
 
 ## Getting Started
 
-1. Install with `$skill-installer https://github.com/kimsanguine/hplan_codex` (or follow the manual steps in `README.md`)
+1. Complete the skill installation step in **Installation** (or follow the manual steps in `README.md`), then start a new Codex turn
 2. In a Codex session, install skills with `$skill-installer https://github.com/kimsanguine/hplan_codex`; start a new turn after it completes
 3. Copy `harness/` templates to your project and run `python3 scripts/hplan_doctor.py`
 4. Start with `$brainstorm [your idea]` because it records the first WHETHER judgment

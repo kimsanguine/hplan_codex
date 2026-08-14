@@ -153,6 +153,7 @@ hplan_codex는 Codex CLI 샌드박스 안에서 실행됩니다. Codex 0.130.0�
 - `bash scripts/setup.sh`를 통한 harness/script 부트스트랩
 - `bash scripts/track-probe.sh` 수동 프로브 실행
 - `python3 scripts/hplan_doctor.py` 읽기 전용 설치 및 core snapshot 점검
+- `python3 scripts/repair_hplan_core_snapshot.py --root .` 명시적 로컬 snapshot 복구
 - `python3 scripts/validate_agents.py` 정적 스킬/문서 검증
 
 예정 또는 adapter 의존 기능은

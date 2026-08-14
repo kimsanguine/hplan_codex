@@ -5,11 +5,15 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 
 ROOT = Path(__file__).resolve().parents[1]
 SETUP = ROOT / "scripts" / "setup.sh"
 DOCTOR = ROOT / "scripts" / "hplan_doctor.py"
+SCRIPTS_DIR = ROOT / "scripts"
+sys.path.insert(0, str(SCRIPTS_DIR))
+import repair_hplan_core_snapshot as repair  # noqa: E402
 
 
 class HplanDoctorTests(unittest.TestCase):
@@ -196,6 +200,36 @@ class HplanDoctorTests(unittest.TestCase):
             )
             self.assertEqual(1, repair.returncode, repair.stdout)
             self.assertFalse(live_matrix.exists(), "incomplete backup must not partially restore the live snapshot")
+
+    def test_repair_rolls_back_every_live_artifact_when_second_replace_fails(self):
+        """A mid-transaction write failure must not leave the first snapshot artifact replaced."""
+        with tempfile.TemporaryDirectory() as tmp:
+            target = Path(tmp) / "project"
+            self.install_fixture(target)
+            before = {}
+            for artifact in repair.ARTIFACTS:
+                path = target / artifact
+                path.write_bytes(f"original-live-{artifact}".encode("utf-8"))
+                before[artifact] = path.read_bytes()
+
+            real_replace = repair.os.replace
+            calls = 0
+
+            def fail_second_replace(source, destination):
+                nonlocal calls
+                calls += 1
+                if calls == 2:
+                    raise OSError("injected second replace failure")
+                return real_replace(source, destination)
+
+            with patch.object(repair.os, "replace", side_effect=fail_second_replace):
+                success, message = repair.restore(target)
+
+            self.assertFalse(success)
+            self.assertIn("이전 상태", message)
+            for artifact, expected in before.items():
+                with self.subTest(artifact=artifact):
+                    self.assertEqual(expected, (target / artifact).read_bytes())
 
     def test_local_source_setup_does_not_require_curl_on_path(self):
         """A local installer must not reject an otherwise complete source checkout because curl is absent."""

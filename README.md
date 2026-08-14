@@ -163,6 +163,7 @@ Currently executable:
 - Harness/script bootstrap via `bash scripts/setup.sh`
 - Manual probe invocation via `bash scripts/track-probe.sh`
 - Read-only installation and core snapshot check via `python3 scripts/hplan_doctor.py`
+- Explicit local snapshot recovery via `python3 scripts/repair_hplan_core_snapshot.py --root .`
 - Static skill/doc validation via `python3 scripts/validate_agents.py`
 
 Planned or adapter-dependent capabilities are tracked in
