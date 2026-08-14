@@ -2,6 +2,13 @@
 
 ---
 
+## [0.2.4] — 2026-08-14
+
+### Changed
+
+- Remove public `docs/` and prohibit any tracked `docs` or `.archive` path component.
+- Move the runtime snapshot and local repair backup to `runtime/hplan-core/`; setup, doctor, repair, CI, and installation guidance now use the same path.
+
 ## [0.2.3] — 2026-08-14
 
 ### Added
