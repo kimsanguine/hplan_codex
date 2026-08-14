@@ -71,7 +71,7 @@ def codex_version() -> tuple[bool, str]:
 
 
 def first_success_skills_problem() -> str | None:
-    codex_home = Path(os.environ.get("CODEX_HOME", Path.home() / ".codex"))
+    codex_home = Path(os.environ.get("CODEX_HOME", str(Path.home() / ".codex")))
     missing = [
         skill_name
         for skill_name in FIRST_SUCCESS_SKILLS

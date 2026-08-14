@@ -2,6 +2,18 @@
 
 ---
 
+## [0.2.3] — 2026-08-14
+
+### Added
+- Versioned hplan-core adapter contract: 34 canonical capabilities with 25 `native` and 9 `adapter-required` support states, nine behavioral rules, and three compatibility aliases.
+- Read-only `python3 scripts/hplan_doctor.py` checks Python, Codex CLI availability, and the three first-success skills installed in `$CODEX_HOME/skills`, plus four total core snapshot artifacts: `hplan-core.lock` and three `docs/` artifacts.
+- Explicit `python3 scripts/repair_hplan_core_snapshot.py --root .` local snapshot repair. It verifies the project-local `.hplan-core-snapshot/` backup, stages the four total artifacts, rolls back on a failed replacement, and rejects symlinked repair paths.
+
+### Fixed
+- CI parity tests now use the checked-in `hplan-core-fixture/` fixture pinned to the private hplan-core commit recorded in `hplan-core-fixture/PROVENANCE.json`; it is CI-only and not a runtime snapshot or repair backup, so public CI no longer requires an external core checkout.
+- Documentation distinguishes the 34-capability core contract from 28 local skill folders, including the three compatibility aliases.
+- Codex CLI 0.130.0 behavior is documented as a verified baseline, not as a claim about the current CLI.
+
 ## [0.2.1] — 2026-06-03
 
 ### Fixed

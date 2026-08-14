@@ -4,9 +4,9 @@
 
 Codex CLI용 PM Build Gate. AI 에이전트 코딩에 구조화된 의사결정 프레임워크.
 
-[![skills](https://img.shields.io/badge/skills-28-blue)](skills/)
+[![local%20folders](https://img.shields.io/badge/local%20folders-28-blue)](skills/)
 [![plugins](https://img.shields.io/badge/plugins-5-green)](skills/)
-[![Codex CLI](https://img.shields.io/badge/Codex%20CLI-0.130.0+-black)](https://developers.openai.com/codex)
+[![Codex CLI baseline](https://img.shields.io/badge/Codex%20CLI%20baseline-0.130.0-black)](https://developers.openai.com/codex)
 [![license](https://img.shields.io/badge/license-MIT-lightgrey)](LICENSE)
 
 ---
@@ -20,6 +20,12 @@ hplan_codex는 HOW 앞에 **WHETHER 게이트**를 추가합니다:
 - 이게 해결해야 할 맞는 문제인가?
 - 실제 고통의 증거가 있는가?
 - 이 규모에서 운영 비용이 감당 가능한가?
+
+## Core 계약과 Local Folder
+
+hplan-core 계약은 Codex 기준 **canonical capability 34개**를 정의합니다. 이 중 **25개는 native**, **9개는 adapter-required**입니다. `adapter-required` capability는 활성 상태가 아니므로, 별도 adapter가 승인되기 전에는 문서화된 draft 또는 local fallback을 사용합니다.
+
+이 저장소에는 **local skill folder 28개**도 있습니다. 이는 28개 기능이라는 뜻이 아니라 설치 레이아웃 수이며, compatibility alias folder인 `roadmap`, `router`, `stakeholder-update` 3개를 포함합니다.
 
 ---
 
@@ -43,10 +49,9 @@ npm install -g @openai/codex
 $skill-installer https://github.com/kimsanguine/hplan_codex
 ```
 
-28개 스킬을 Codex CLI 스킬 디렉토리로 가져옵니다. 현재 작업 중인 프로젝트에
-`harness/` 파일이나 보조 스크립트를 복사하지는 않습니다.
+28개 local folder를 Codex CLI 스킬 디렉토리에 설치합니다. 여기에는 compatibility alias 3개가 포함됩니다. 현재 작업 중인 프로젝트에 `harness/` 파일이나 보조 스크립트를 복사하지는 않습니다.
 
-**프로젝트 설정 — harness 파일과 스크립트 복사:**
+**프로젝트 설정 — latest-main bootstrap (tag-pinned/reproducible 아님):**
 
 ```bash
 bash <(curl -fsSL https://raw.githubusercontent.com/kimsanguine/hplan_codex/main/scripts/setup.sh)
@@ -62,16 +67,16 @@ Codex 스킬 설치는 하지 않으므로 `$skill-installer`와 함께 사용�
 HPLAN_CODEX_SOURCE_DIR=/path/to/hplan_codex bash scripts/setup.sh --dir=/path/to/test-project
 ```
 
-**수동 대안** (clone + 스킬 + harness 설정):
+**수동 대안 — 검증된 local-source setup** (clone + 스킬 + 완전한 프로젝트 bootstrap):
 
 ```bash
 git clone https://github.com/kimsanguine/hplan_codex.git
+# doctor가 검증하는 Codex CLI scope에 스킬을 복사합니다.
 mkdir -p "${CODEX_HOME:-$HOME/.codex}/skills"
 cp -R hplan_codex/skills/* "${CODEX_HOME:-$HOME/.codex}/skills/"
-cp -r hplan_codex/harness/ ./harness/
-cp -r hplan_codex/scripts/ ./scripts/
-cp hplan_codex/AGENTS.md ./AGENTS.md
-# 선택: config 예시를 보관한 뒤, 기존 전역 설정에 필요한 값만 수동 병합
+# 이 명령은 harness, doctor, snapshot, repair backup도 현재 프로젝트에 설치합니다.
+HPLAN_CODEX_SOURCE_DIR="$(pwd)/hplan_codex" bash hplan_codex/scripts/setup.sh --dir=.
+# 선택: config 예시를 보관한 뒤, 기존 전역 설정에 필요한 값만 수동 병합합니다.
 mkdir -p "${CODEX_HOME:-$HOME/.codex}"
 cp -n hplan_codex/config.toml.example "${CODEX_HOME:-$HOME/.codex}/config.toml.example"
 ```
@@ -83,7 +88,11 @@ cp -n hplan_codex/config.toml.example "${CODEX_HOME:-$HOME/.codex}/config.toml.e
 첫 성공에는 별도 설치 두 가지가 필요합니다. `$skill-installer`는 `$CODEX_HOME/skills`에 스킬을 설치하고, `scripts/setup.sh`는 프로젝트 로컬의 harness, doctor, core snapshot만 복사합니다. 프로젝트 폴더에서 다음 순서를 확인합니다:
 
 1. Codex 세션에서 `$skill-installer https://github.com/kimsanguine/hplan_codex`를 실행하고, 완료 후 새 turn을 시작합니다.
-2. 프로젝트 디렉토리에서 `bash scripts/setup.sh`(또는 위 local-source setup 명령)을 실행합니다.
+2. 프로젝트 디렉토리에서 아래 latest-main bootstrap을 실행합니다. `$skill-installer` 실행 후 동작하지만 tag-pinned/reproducible한 설치는 아닙니다.
+
+   ```bash
+   bash <(curl -fsSL https://raw.githubusercontent.com/kimsanguine/hplan_codex/main/scripts/setup.sh) --dir=.
+   ```
 3. 읽기 전용 설치 확인을 실행합니다: `python3 scripts/hplan_doctor.py`. 이 명령은 활성 `$CODEX_HOME`의 첫 성공 스킬 3개와 프로젝트 snapshot을 함께 확인합니다.
 4. Codex CLI에서 프로젝트를 열고 `$brainstorm "아이디어"`를 실행합니다.
 5. 첫 WHETHER 판단(`GO`, `INVESTIGATE`, `HOLD`)을 기록합니다.
@@ -101,11 +110,13 @@ cp -n hplan_codex/config.toml.example "${CODEX_HOME:-$HOME/.codex}/config.toml.e
 ### 읽기 전용 `hplan doctor` 대응 명령
 
 `scripts/setup.sh`로 준비한 프로젝트에서 `python3 scripts/hplan_doctor.py`를 실행하세요.
-이 명령은 파일을 쓰지 않으며 Python, 확인 가능한 Codex CLI 버전, `$CODEX_HOME/skills`의 첫 성공 스킬 3개, `hplan-core` 스냅샷 4개 artifact를 확인합니다.
+이 명령은 파일을 쓰지 않으며 Python, 확인 가능한 Codex CLI 버전, `$CODEX_HOME/skills`의 첫 성공 스킬 3개, `hplan-core.lock`과 `docs/`의 파일 3개로 이루어진 총 4개 snapshot artifact를 확인합니다.
 
 - `정상` — `$brainstorm "아이디어"`로 시작합니다.
-- `자동 복구 가능` — 첫 성공 스킬이 없으면 Codex에서 `$skill-installer https://github.com/kimsanguine/hplan_codex`를 실행합니다. snapshot만 누락되었으면 `python3 scripts/repair_hplan_core_snapshot.py --root .`를 실행합니다. 그 뒤 doctor를 다시 실행합니다. 이 명시적 로컬 복구는 포함된 snapshot artifact 4개만 되돌리며, doctor 자체는 절대 쓰지 않습니다.
+- `자동 복구 가능` — 첫 성공 스킬이 없으면 Codex에서 `$skill-installer https://github.com/kimsanguine/hplan_codex`를 실행합니다. snapshot만 누락되었으면 `python3 scripts/repair_hplan_core_snapshot.py --root .`를 실행합니다. 그 뒤 doctor를 다시 실행합니다. 이 명시적 로컬 복구는 `hplan-core.lock`과 `docs/` 파일 3개, 총 4개의 snapshot artifact만 되돌리며, doctor 자체는 절대 쓰지 않습니다.
 - `강사 호출` — mismatch 출력을 보존하고 패키지 관리자에게 matching core snapshot을 요청합니다. doctor는 임의로 덮어쓰지 않습니다.
+
+프로젝트 snapshot은 총 4개 artifact입니다: `hplan-core.lock`, `docs/hplan-capability-matrix.json`, `docs/HPLAN_CAPABILITY_MATRIX.md`, `docs/hplan-core-adapter.json`. 복구 원본은 프로젝트 로컬 `.hplan-core-snapshot/` backup이며, 체크인된 `hplan-core-fixture/`는 CI parity 전용 데이터이므로 복구 원본이 아닙니다.
 
 **전체 워크플로우:**
 
@@ -134,7 +145,7 @@ $brainstorm → $socratic-question → $opp-tree → $prd → $conductor
 
 ## 보안 & 샌드박스
 
-hplan_codex는 Codex CLI 샌드박스 안에서 실행됩니다. Codex 0.130.0은 세 가지 샌드박스 모드를 지원합니다:
+hplan_codex는 Codex CLI 샌드박스 안에서 실행됩니다. 아래 샌드박스 동작은 **Codex CLI 0.130.0 baseline**에서 검증된 내용이며, 새 CLI에서는 현재 문서를 확인해야 합니다:
 
 | 모드 | 권한 |
 |---|---|
@@ -144,7 +155,7 @@ hplan_codex는 Codex CLI 샌드박스 안에서 실행됩니다. Codex 0.130.0�
 
 샌드박스 모드는 Codex CLI 세션 또는 설정에서 지정합니다. hplan_codex의 빌드 단계 스킬은 `workspace-write`를 전제로 합니다.
 
-> Codex CLI 0.130.0은 파일 기반 hook을 지원하지 않습니다. `scripts/track-probe.sh`는 `bash scripts/track-probe.sh`로 직접 실행하거나 Codex automation에 연결할 수 있는 수동 스프린트 추적 프로브로 제공됩니다.
+> 검증된 Codex CLI 0.130.0 baseline에서는 파일 기반 hook을 사용할 수 없었습니다. `scripts/track-probe.sh`는 `bash scripts/track-probe.sh`로 직접 실행하거나 Codex automation에 연결할 수 있는 수동 스프린트 추적 프로브로 제공됩니다.
 
 ## 현재 상태 & 검증
 

@@ -11,7 +11,7 @@
 hplan_codex is a PM Build Gate system for Codex CLI.
 It gives AI coding agents a structured decision-making framework — preventing you from building the wrong thing.
 
-**5 plugins · 28 local skill folders · AGENTS.md based**
+**5 plugins · 34 core capabilities (25 native, 9 adapter-required) · 28 local skill folders including 3 compatibility aliases · AGENTS.md based**
 
 ---
 
@@ -54,6 +54,8 @@ Declare the permitted work scope before delegated execution. Stop for approval b
 
 External connector writes remain disabled. This package may create local artifacts and drafts, but it does not activate, authorize, or write through external connectors.
 
+The core contract has 34 canonical capabilities: 25 `native` and 9 `adapter-required`. The 28 local folders are an installation-layout count, not a separate 28-capability feature count; they include the three aliases below.
+
 ### Compatibility aliases
 
 | Alias | Compatibility route | Boundary |
@@ -75,8 +77,8 @@ hplan (gate)  →  discover  →  architect  →  deliver  →  operate
 |---|---|---|
 | **hplan** | Should we build this? | brainstorm, evidence-rubric, decision-log, exclusions, ost |
 | **discover** | What problem is real? | socratic-question, opp-tree, assumptions, cost-sim, customer-reach, hitl |
-| **architect** | How should it be designed? | orchestration, memory-arch, design-token, router, strategy |
-| **deliver** | How do we build and ship? | prd, conductor, sprint, roadmap, qa-checklist, stakeholder-update, build-loop |
+| **architect** | How should it be designed? | orchestration, memory-arch, design-token, strategy; router (compatibility alias → orchestration `--pattern router`) |
+| **deliver** | How do we build and ship? | prd, conductor, sprint, qa-checklist, build-loop; roadmap (compatibility alias → prd `--mode roadmap`), stakeholder-update (compatibility alias → ops-review, draft-only) |
 | **operate** | How do we sustain it? | pm-engine, metrics-design, ops-review, incident, portfolio |
 
 ---
@@ -112,9 +114,11 @@ The 28 local folders below are not a claim of core-native support. For every cor
 |---|---|
 | hplan | `$brainstorm` `$evidence-rubric` `$decision-log` `$exclusions` `$ost` |
 | discover | `$socratic-question` `$opp-tree` `$assumptions` `$cost-sim` `$customer-reach` `$hitl` |
-| architect | `$orchestration` `$memory-arch` `$design-token` `$router` `$strategy` |
-| deliver | `$prd` `$conductor` `$sprint` `$roadmap` `$qa-checklist` `$stakeholder-update` `$build-loop` |
+| architect | `$orchestration` `$memory-arch` `$design-token` `$strategy` |
+| deliver | `$prd` `$conductor` `$sprint` `$qa-checklist` `$build-loop` |
 | operate | `$pm-engine` `$metrics-design` `$ops-review` `$incident` `$portfolio` |
+
+The remaining three local folders are compatibility aliases, not additional canonical capabilities: `$roadmap` → `$prd --mode roadmap`; `$router` → `$orchestration --pattern router`; `$stakeholder-update` → `$ops-review` (draft-only unless a separately authorized adapter exists).
 
 ---
 
@@ -145,7 +149,7 @@ $skill-installer https://github.com/kimsanguine/hplan_codex
 This pulls the skills into your Codex CLI skills directory only.
 It does not copy `harness/` templates or helper scripts into the target project.
 
-Use `scripts/setup.sh` for project setup:
+Use this latest-main bootstrap for project setup (not tag-pinned/reproducible):
 
 ```bash
 bash <(curl -fsSL https://raw.githubusercontent.com/kimsanguine/hplan_codex/main/scripts/setup.sh)
@@ -165,7 +169,7 @@ HPLAN_CODEX_SOURCE_DIR=/path/to/hplan_codex bash scripts/setup.sh --dir=/path/to
 python3 scripts/hplan_doctor.py
 ```
 
-doctor는 Python, 가능한 Codex CLI 버전, 활성 `$CODEX_HOME/skills`의 `brainstorm`·`socratic-question`·`evidence-rubric`, `hplan-core.lock`과 네 개의 core artifact 일치성을 검사한다. `scripts/setup.sh`는 스킬을 설치하지 않으므로, 첫 세 스킬이 없으면 Codex 세션에서 `$skill-installer https://github.com/kimsanguine/hplan_codex`를 실행한 뒤 doctor를 재실행한다. snapshot만 누락된 `자동 복구 가능`이면 `python3 scripts/repair_hplan_core_snapshot.py --root .`를 명시적으로 실행한 뒤 doctor를 재실행한다. 이 복구 명령은 포함된 로컬 백업의 snapshot artifact 4개만 바꾸며 doctor 자체는 쓰지 않는다. `강사 호출`은 core snapshot mismatch이며, 임의 덮어쓰기 대신 출력 내용을 유지해 패키지 관리자에게 전달한다.
+doctor는 Python, 가능한 Codex CLI 버전, `$CODEX_HOME/skills`의 `brainstorm`·`socratic-question`·`evidence-rubric`, 총 4개 snapshot artifact(`hplan-core.lock`과 `docs/`의 파일 3개) 일치성을 검사한다. `scripts/setup.sh`는 스킬을 설치하지 않으므로, 첫 세 스킬이 없으면 Codex 세션에서 `$skill-installer https://github.com/kimsanguine/hplan_codex`를 실행한 뒤 doctor를 재실행한다. snapshot만 누락된 `자동 복구 가능`이면 `python3 scripts/repair_hplan_core_snapshot.py --root .`를 명시적으로 실행한 뒤 doctor를 재실행한다. 이 복구 명령은 프로젝트 로컬 `.hplan-core-snapshot/` backup의 총 4개 snapshot artifact만 바꾸며 doctor 자체는 쓰지 않는다. 체크인 `hplan-core-fixture/`는 CI parity fixture이지 복구 원본이 아니다. `강사 호출`은 core snapshot mismatch이며, 임의 덮어쓰기 대신 출력 내용을 유지해 패키지 관리자에게 전달한다.
 
 ---
 
@@ -242,8 +246,9 @@ Skills use the following tool names compatible with Codex CLI:
 Codex CLI reads config from `~/.codex/config.toml` (top-level keys). See `config.toml.example` in this repo:
 
 ```toml
-# Default model (verified slugs: gpt-5.5, gpt-5.4, gpt-5.4-mini, gpt-5.3-codex, gpt-5.2)
-model = "gpt-5.5"
+# In an interactive Codex session, use /model to see models available to your account.
+# Do not copy a hard-coded model slug from this example.
+# After selecting an available model, optionally set its supported reasoning effort:
 model_reasoning_effort = "high"
 
 # Trust this project directory
@@ -251,9 +256,9 @@ model_reasoning_effort = "high"
 trust_level = "trusted"
 ```
 
-Reasoning depth is controlled by `model_reasoning_effort` (`minimal` / `low` / `medium` / `high`), not by a separate model alias.
+Use `/model` to confirm model availability for the current account and CLI. Where the selected model supports it, control reasoning depth with `model_reasoning_effort` (`minimal` / `low` / `medium` / `high`).
 
-Codex CLI 0.130.0 does not support file-based hooks. Background automation, when needed, is driven by Codex automations/rules; `scripts/track-probe.sh` is provided as a manual probe you can invoke directly.
+At the verified Codex CLI 0.130.0 baseline, file-based hooks were unavailable. Background automation, when needed, is driven by Codex automations/rules; `scripts/track-probe.sh` is provided as a manual probe you can invoke directly.
 
 Invoke the probe with Bash:
 
@@ -284,12 +289,11 @@ printf '%s\n' '{"tool_name":"write_file","tool_input":{"file_path":"noop","conte
 
 ## Getting Started
 
-1. Complete the skill installation step in **Installation** (or follow the manual steps in `README.md`), then start a new Codex turn
-2. In a Codex session, install skills with `$skill-installer https://github.com/kimsanguine/hplan_codex`; start a new turn after it completes
-3. Copy `harness/` templates to your project and run `python3 scripts/hplan_doctor.py`
-4. Start with `$brainstorm [your idea]` because it records the first WHETHER judgment
-5. Use `$socratic-question` next to expose high-risk assumptions
-6. Use `$evidence-rubric` to name the missing real evidence before a `GO` decision
-7. Follow the plugin lifecycle: hplan → discover → architect → deliver → operate
+1. In a Codex session, install skills with `$skill-installer https://github.com/kimsanguine/hplan_codex`; start a new turn after it completes
+2. Bootstrap the project with the latest-main `scripts/setup.sh` command in `README.md`, then run `python3 scripts/hplan_doctor.py`
+3. Start with `$brainstorm [your idea]` because it records the first WHETHER judgment
+4. Use `$socratic-question` next to expose high-risk assumptions
+5. Use `$evidence-rubric` to name the missing real evidence before a `GO` decision
+6. Follow the plugin lifecycle: hplan → discover → architect → deliver → operate
 
 > "The most expensive code is code that shouldn't have been written."

@@ -26,6 +26,15 @@ class HplanDoctorTests(unittest.TestCase):
                 encoding="utf-8",
             )
 
+    def install_first_success_skills_in_scope(self, scope: Path) -> None:
+        for skill_name in ("brainstorm", "socratic-question", "evidence-rubric"):
+            skill = scope / skill_name / "SKILL.md"
+            skill.parent.mkdir(parents=True, exist_ok=True)
+            skill.write_text(
+                f"---\nname: {skill_name}\ndescription: scope fixture\n---\n",
+                encoding="utf-8",
+            )
+
     def install_fixture(self, target: Path) -> None:
         env = os.environ.copy()
         env["HPLAN_CODEX_SOURCE_DIR"] = str(ROOT)
@@ -39,7 +48,9 @@ class HplanDoctorTests(unittest.TestCase):
         )
         self.assertEqual(0, result.returncode, result.stdout)
 
-    def doctor_with_codex(self, target: Path, codex_home: Path) -> subprocess.CompletedProcess[str]:
+    def doctor_with_codex(
+        self, target: Path, codex_home: Path, home: Path | None = None
+    ) -> subprocess.CompletedProcess[str]:
         fake_bin = target / "fake-bin"
         fake_bin.mkdir(exist_ok=True)
         codex = fake_bin / "codex"
@@ -48,6 +59,8 @@ class HplanDoctorTests(unittest.TestCase):
         env = os.environ.copy()
         env["PATH"] = f"{fake_bin}{os.pathsep}{env['PATH']}"
         env["CODEX_HOME"] = str(codex_home)
+        if home is not None:
+            env["HOME"] = str(home)
         return subprocess.run(
             [sys.executable, str(target / "scripts" / "hplan_doctor.py"), "--root", str(target)],
             text=True,
@@ -57,15 +70,16 @@ class HplanDoctorTests(unittest.TestCase):
             check=False,
         )
 
-    def test_doctor_reports_normal_for_a_complete_local_install(self):
-        """Removing a required snapshot artifact must turn this normal result into recovery status."""
+    def test_doctor_reports_normal_for_temp_codex_home_skills_only(self):
+        """A clean temporary CODEX_HOME is sufficient when it contains the three installed skills."""
         with tempfile.TemporaryDirectory() as tmp:
             target = Path(tmp) / "project"
+            home = Path(tmp) / "home"
             codex_home = Path(tmp) / "codex-home"
             self.install_first_success_skills(codex_home)
             self.install_fixture(target)
 
-            result = self.doctor_with_codex(target, codex_home)
+            result = self.doctor_with_codex(target, codex_home, home)
 
             self.assertEqual(0, result.returncode, result.stdout)
             self.assertIn("상태: 정상", result.stdout)
@@ -159,14 +173,16 @@ class HplanDoctorTests(unittest.TestCase):
             self.assertIn("상태: 강사 호출", result.stdout)
             self.assertIn("Markdown capability matrix를 읽을 수 없습니다", result.stdout)
 
-    def test_doctor_blocks_first_success_until_skills_are_installed_in_codex_home(self):
-        """A project-only setup must not claim brainstorm is usable when CODEX_HOME has no hplan skills."""
+    def test_doctor_does_not_treat_agents_scope_as_native_install(self):
+        """A temporary .agents scope alone must not be reported as a verified Codex CLI install."""
         with tempfile.TemporaryDirectory() as tmp:
             target = Path(tmp) / "project"
+            home = Path(tmp) / "home"
             empty_codex_home = Path(tmp) / "empty-codex-home"
             self.install_fixture(target)
+            self.install_first_success_skills_in_scope(home / ".agents" / "skills")
 
-            result = self.doctor_with_codex(target, empty_codex_home)
+            result = self.doctor_with_codex(target, empty_codex_home, home)
 
             self.assertEqual(1, result.returncode, result.stdout)
             self.assertIn("First-success skills: 자동 복구 가능", result.stdout)

@@ -10,15 +10,27 @@ Status meanings:
 - `script-only`: Local script or manual command, not a Codex skill.
 - `external`: Capability is provided outside this repo, such as another Codex skill or external service.
 
-## Available Skills
+## Local Skill Folders
+
+There are 28 local folders. Twenty-five are direct local skill folders listed below; the remaining three are compatibility aliases, not additional canonical capabilities.
 
 | Plugin | Skills |
 |---|---|
 | hplan | `$brainstorm`, `$evidence-rubric`, `$decision-log`, `$exclusions`, `$ost` |
 | discover | `$socratic-question`, `$opp-tree`, `$assumptions`, `$cost-sim`, `$customer-reach`, `$hitl` |
-| architect | `$orchestration`, `$memory-arch`, `$design-token`, `$router`, `$strategy` |
-| deliver | `$prd`, `$conductor`, `$sprint`, `$roadmap`, `$qa-checklist`, `$stakeholder-update`, `$build-loop` |
+| architect | `$orchestration`, `$memory-arch`, `$design-token`, `$strategy` |
+| deliver | `$prd`, `$conductor`, `$sprint`, `$qa-checklist`, `$build-loop` |
 | operate | `$pm-engine`, `$metrics-design`, `$ops-review`, `$incident`, `$portfolio` |
+
+## Compatibility Alias Folders
+
+These three local folders preserve established invocation routes. They are aliases, not distinct core capabilities.
+
+| Alias | Compatibility route | Boundary |
+|---|---|---|
+| `$roadmap` | `$roadmap` → `$prd --mode roadmap` | Preserve the mode. |
+| `$router` | `$router` → `$orchestration --pattern router` | Preserve the pattern. |
+| `$stakeholder-update` | `$stakeholder-update` → `$ops-review` | Draft-only unless a separately authorized adapter exists. |
 
 ## Planned Skill References
 
