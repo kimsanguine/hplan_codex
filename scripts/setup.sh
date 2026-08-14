@@ -45,12 +45,13 @@ fi
 echo ""
 
 # 1) Check dependencies
-if ! command -v curl &>/dev/null; then
-  echo "Error: 'curl' is required but not found." >&2
-  exit 1
-fi
-if [ -n "$SOURCE_DIR" ] && [ ! -d "$SOURCE_DIR" ]; then
-  echo "Error: HPLAN_CODEX_SOURCE_DIR does not exist: $SOURCE_DIR" >&2
+if [ -n "$SOURCE_DIR" ]; then
+  if [ ! -d "$SOURCE_DIR" ]; then
+    echo "Error: HPLAN_CODEX_SOURCE_DIR does not exist: $SOURCE_DIR" >&2
+    exit 1
+  fi
+elif ! command -v curl &>/dev/null; then
+  echo "Error: 'curl' is required only for a remote install but was not found." >&2
   exit 1
 fi
 
@@ -109,12 +110,28 @@ echo "Copying scripts/..."
 mkdir -p "$TARGET_DIR/scripts"
 for f in cogs_sentinel.py decision_log.py exclusions_registry.py generate_report.py \
          interview_synthesis.py ost_generator.py validate-mermaid.py validate_agents.py \
-         track-probe.sh; do
+         track-probe.sh hplan_doctor.py repair_hplan_core_snapshot.py; do
   fetch "scripts/$f" "$TARGET_DIR/scripts/$f" required
 done
 chmod +x "$TARGET_DIR/scripts/track-probe.sh" 2>/dev/null || true
 
-# 7) Fail loud on required-file failures (no false "installed" success)
+# 7) Copy hplan-core snapshot (required — doctor uses it read-only)
+echo "Copying hplan-core snapshot..."
+mkdir -p "$TARGET_DIR/docs"
+fetch "hplan-core.lock" "$TARGET_DIR/hplan-core.lock" required
+for f in hplan-capability-matrix.json HPLAN_CAPABILITY_MATRIX.md hplan-core-adapter.json; do
+  fetch "docs/$f" "$TARGET_DIR/docs/$f" required
+done
+
+# 8) Copy a local backup for the explicit core snapshot repair command.
+echo "Copying hplan-core repair backup..."
+mkdir -p "$TARGET_DIR/.hplan-core-snapshot/docs"
+fetch "hplan-core.lock" "$TARGET_DIR/.hplan-core-snapshot/hplan-core.lock" required
+for f in hplan-capability-matrix.json HPLAN_CAPABILITY_MATRIX.md hplan-core-adapter.json; do
+  fetch "docs/$f" "$TARGET_DIR/.hplan-core-snapshot/docs/$f" required
+done
+
+# 9) Fail loud on required-file failures (no false "installed" success)
 echo ""
 if [ "${#FAILED_REQUIRED[@]}" -gt 0 ]; then
   echo "ERROR: ${#FAILED_REQUIRED[@]} required file(s) failed to download:" >&2
@@ -133,7 +150,8 @@ echo "  1. Install the skills in a Codex session:"
 echo "       \$skill-installer https://github.com/kimsanguine/hplan_codex"
 echo "  2. (optional) Copy config.toml.example keys to ~/.codex/config.toml"
 echo "  3. cd $TARGET_DIR and run Codex CLI in this directory"
-echo "  4. Start: \$brainstorm \"your idea\""
+echo "  4. Check: python3 scripts/hplan_doctor.py"
+echo "  5. Start: \$brainstorm \"your idea\""
 echo ""
 echo "Full workflow:"
 echo "  \$brainstorm -> \$socratic-question -> \$opp-tree -> \$prd -> \$conductor"

@@ -98,15 +98,36 @@ cp -n hplan_codex/config.toml.example "${CODEX_HOME:-$HOME/.codex}/config.toml.e
 
 ## First 10 Minute Success Path
 
-After installing (above), confirm the first useful loop from your project folder:
+The first success needs two separate installs: `$skill-installer` places skills in
+`$CODEX_HOME/skills`, while `scripts/setup.sh` copies only project-local harness,
+doctor, and core snapshot files. Confirm this order from your project folder:
 
-1. Open the project in Codex CLI.
-2. Run `$brainstorm "your idea here"`.
-3. Capture the first WHETHER judgment: `GO`, `INVESTIGATE`, or `HOLD`.
-4. If the idea is still alive, create or update `harness/pain.md` with real evidence, not AI-generated seed text.
-5. Run `$evidence-rubric` and keep the score plus missing-evidence notes.
+1. In a Codex session, run `$skill-installer https://github.com/kimsanguine/hplan_codex`; use a new turn after it completes.
+2. In the project directory, run `bash scripts/setup.sh` (or the local-source setup command above).
+3. Run the read-only installation check: `python3 scripts/hplan_doctor.py`. It checks the three first-success skills in the active `$CODEX_HOME` as well as the project snapshot.
+4. Open the project in Codex CLI and run `$brainstorm "your idea here"`.
+5. Capture the first WHETHER judgment: `GO`, `INVESTIGATE`, or `HOLD`.
+6. If the idea is still alive, create or update `harness/pain.md` with real evidence, not AI-generated seed text.
+7. Run `$evidence-rubric` and keep the score plus missing-evidence notes.
 
 Expected first success: a documented build/no-build judgment within 10 minutes, plus the next evidence action.
+
+### Start with these three skills
+
+1. `$brainstorm` — starts with the WHETHER gate, so the first output is a specific build/no-build direction rather than a feature list.
+2. `$socratic-question` — turns that direction into explicit assumptions and exposes the highest-risk unknown before implementation.
+3. `$evidence-rubric` — scores the evidence and names what is still missing; AI-generated seeds never count as real proof for a `GO` decision.
+
+### Read-only `hplan doctor` equivalent
+
+Run `python3 scripts/hplan_doctor.py` from a project created by `scripts/setup.sh`.
+It makes no writes and checks Python, the available Codex CLI version, the three
+first-success skills in `$CODEX_HOME/skills`, and all four `hplan-core` snapshot
+artifacts. The result is intentionally actionable:
+
+- `정상` — start `$brainstorm "your idea"`.
+- `자동 복구 가능` — if first-success skills are missing, run `$skill-installer https://github.com/kimsanguine/hplan_codex` in Codex. If the snapshot alone is missing, run `python3 scripts/repair_hplan_core_snapshot.py --root .`. Then run doctor again. This explicit local repair restores only the four bundled snapshot artifacts; doctor itself never writes.
+- `강사 호출` — preserve the mismatch output and ask the package maintainer for a matching core snapshot; doctor will not overwrite it.
 
 **Full workflow:**
 
@@ -141,6 +162,8 @@ Currently executable:
 - Skill installation via `$skill-installer`
 - Harness/script bootstrap via `bash scripts/setup.sh`
 - Manual probe invocation via `bash scripts/track-probe.sh`
+- Read-only installation and core snapshot check via `python3 scripts/hplan_doctor.py`
+- Explicit local snapshot recovery via `python3 scripts/repair_hplan_core_snapshot.py --root .`
 - Static skill/doc validation via `python3 scripts/validate_agents.py`
 
 Planned or adapter-dependent capabilities are tracked in
@@ -155,7 +178,11 @@ Verification commands:
 
 ```bash
 python3 scripts/validate_agents.py
+python3 scripts/hplan_doctor.py
 python3 scripts/cogs_sentinel.py --json
+# CI uses the checked-in `hplan-core-fixture`, pinned to a private core commit.
+# It is a parity fixture, not a public core distribution. Set HPLAN_CORE_DIR only
+# to compare an approved local core checkout during maintenance.
 python3 -m unittest discover -s tests
 bash -n scripts/setup.sh scripts/track-probe.sh
 bash scripts/setup.sh --help

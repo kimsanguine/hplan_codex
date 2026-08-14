@@ -80,15 +80,32 @@ cp -n hplan_codex/config.toml.example "${CODEX_HOME:-$HOME/.codex}/config.toml.e
 
 ## 첫 10분 성공 경로
 
-설치 후 프로젝트 폴더에서 첫 유용한 루프를 확인합니다:
+첫 성공에는 별도 설치 두 가지가 필요합니다. `$skill-installer`는 `$CODEX_HOME/skills`에 스킬을 설치하고, `scripts/setup.sh`는 프로젝트 로컬의 harness, doctor, core snapshot만 복사합니다. 프로젝트 폴더에서 다음 순서를 확인합니다:
 
-1. Codex CLI에서 프로젝트를 엽니다.
-2. `$brainstorm "아이디어"`를 실행합니다.
-3. 첫 WHETHER 판단(`GO`, `INVESTIGATE`, `HOLD`)을 기록합니다.
-4. 아이디어를 계속 볼 가치가 있으면 `harness/pain.md`에 AI 생성 seed가 아닌 실제 증거를 추가합니다.
-5. `$evidence-rubric`을 실행하고 점수와 부족한 증거를 남깁니다.
+1. Codex 세션에서 `$skill-installer https://github.com/kimsanguine/hplan_codex`를 실행하고, 완료 후 새 turn을 시작합니다.
+2. 프로젝트 디렉토리에서 `bash scripts/setup.sh`(또는 위 local-source setup 명령)을 실행합니다.
+3. 읽기 전용 설치 확인을 실행합니다: `python3 scripts/hplan_doctor.py`. 이 명령은 활성 `$CODEX_HOME`의 첫 성공 스킬 3개와 프로젝트 snapshot을 함께 확인합니다.
+4. Codex CLI에서 프로젝트를 열고 `$brainstorm "아이디어"`를 실행합니다.
+5. 첫 WHETHER 판단(`GO`, `INVESTIGATE`, `HOLD`)을 기록합니다.
+6. 아이디어를 계속 볼 가치가 있으면 `harness/pain.md`에 AI 생성 seed가 아닌 실제 증거를 추가합니다.
+7. `$evidence-rubric`을 실행하고 점수와 부족한 증거를 남깁니다.
 
 첫 성공 기준: 10분 안에 build/no-build 판단과 다음 증거 액션이 문서화됩니다.
+
+### 처음에는 이 세 스킬을 권장합니다
+
+1. `$brainstorm` — WHETHER 게이트부터 시작하므로 기능 목록이 아니라 구체적인 build/no-build 방향을 먼저 만듭니다.
+2. `$socratic-question` — 그 방향에 숨어 있는 가정을 명시하고 구현 전에 가장 위험한 불확실성을 드러냅니다.
+3. `$evidence-rubric` — 증거를 점수화하고 부족한 항목을 알려 줍니다. AI 생성 seed는 `GO`의 실제 증거로 계산하지 않습니다.
+
+### 읽기 전용 `hplan doctor` 대응 명령
+
+`scripts/setup.sh`로 준비한 프로젝트에서 `python3 scripts/hplan_doctor.py`를 실행하세요.
+이 명령은 파일을 쓰지 않으며 Python, 확인 가능한 Codex CLI 버전, `$CODEX_HOME/skills`의 첫 성공 스킬 3개, `hplan-core` 스냅샷 4개 artifact를 확인합니다.
+
+- `정상` — `$brainstorm "아이디어"`로 시작합니다.
+- `자동 복구 가능` — 첫 성공 스킬이 없으면 Codex에서 `$skill-installer https://github.com/kimsanguine/hplan_codex`를 실행합니다. snapshot만 누락되었으면 `python3 scripts/repair_hplan_core_snapshot.py --root .`를 실행합니다. 그 뒤 doctor를 다시 실행합니다. 이 명시적 로컬 복구는 포함된 snapshot artifact 4개만 되돌리며, doctor 자체는 절대 쓰지 않습니다.
+- `강사 호출` — mismatch 출력을 보존하고 패키지 관리자에게 matching core snapshot을 요청합니다. doctor는 임의로 덮어쓰지 않습니다.
 
 **전체 워크플로우:**
 
@@ -135,6 +152,8 @@ hplan_codex는 Codex CLI 샌드박스 안에서 실행됩니다. Codex 0.130.0�
 - `$skill-installer`를 통한 스킬 설치
 - `bash scripts/setup.sh`를 통한 harness/script 부트스트랩
 - `bash scripts/track-probe.sh` 수동 프로브 실행
+- `python3 scripts/hplan_doctor.py` 읽기 전용 설치 및 core snapshot 점검
+- `python3 scripts/repair_hplan_core_snapshot.py --root .` 명시적 로컬 snapshot 복구
 - `python3 scripts/validate_agents.py` 정적 스킬/문서 검증
 
 예정 또는 adapter 의존 기능은
@@ -149,7 +168,11 @@ Canonical 참조:
 
 ```bash
 python3 scripts/validate_agents.py
+python3 scripts/hplan_doctor.py
 python3 scripts/cogs_sentinel.py --json
+# CI는 private core commit에 고정된 체크인 `hplan-core-fixture`를 사용합니다.
+# 이는 parity fixture이며 public core 배포물이 아닙니다. 유지보수 시 승인된
+# local core checkout과 비교할 때만 HPLAN_CORE_DIR를 지정합니다.
 python3 -m unittest discover -s tests
 bash -n scripts/setup.sh scripts/track-probe.sh
 bash scripts/setup.sh --help
