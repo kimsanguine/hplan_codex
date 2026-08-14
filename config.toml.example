@@ -1,8 +1,9 @@
 # hplan_codex — Codex CLI config example
 # Copy relevant keys to ~/.codex/config.toml
 
-# Default model (verified slugs: gpt-5.5, gpt-5.4, gpt-5.4-mini, gpt-5.3-codex, gpt-5.2)
-model = "gpt-5.5"
+# In an interactive Codex session, use /model to see models available to your account.
+# Do not copy a hard-coded model slug from this example.
+# After selecting an available model, optionally set its supported reasoning effort:
 model_reasoning_effort = "high"
 
 # Trust this project directory
