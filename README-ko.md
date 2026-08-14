@@ -82,13 +82,29 @@ cp -n hplan_codex/config.toml.example "${CODEX_HOME:-$HOME/.codex}/config.toml.e
 
 설치 후 프로젝트 폴더에서 첫 유용한 루프를 확인합니다:
 
-1. Codex CLI에서 프로젝트를 엽니다.
-2. `$brainstorm "아이디어"`를 실행합니다.
-3. 첫 WHETHER 판단(`GO`, `INVESTIGATE`, `HOLD`)을 기록합니다.
-4. 아이디어를 계속 볼 가치가 있으면 `harness/pain.md`에 AI 생성 seed가 아닌 실제 증거를 추가합니다.
-5. `$evidence-rubric`을 실행하고 점수와 부족한 증거를 남깁니다.
+1. 읽기 전용 설치 확인을 실행합니다: `python3 scripts/hplan_doctor.py`
+2. Codex CLI에서 프로젝트를 엽니다.
+3. `$brainstorm "아이디어"`를 실행합니다.
+4. 첫 WHETHER 판단(`GO`, `INVESTIGATE`, `HOLD`)을 기록합니다.
+5. 아이디어를 계속 볼 가치가 있으면 `harness/pain.md`에 AI 생성 seed가 아닌 실제 증거를 추가합니다.
+6. `$evidence-rubric`을 실행하고 점수와 부족한 증거를 남깁니다.
 
 첫 성공 기준: 10분 안에 build/no-build 판단과 다음 증거 액션이 문서화됩니다.
+
+### 처음에는 이 세 스킬을 권장합니다
+
+1. `$brainstorm` — WHETHER 게이트부터 시작하므로 기능 목록이 아니라 구체적인 build/no-build 방향을 먼저 만듭니다.
+2. `$socratic-question` — 그 방향에 숨어 있는 가정을 명시하고 구현 전에 가장 위험한 불확실성을 드러냅니다.
+3. `$evidence-rubric` — 증거를 점수화하고 부족한 항목을 알려 줍니다. AI 생성 seed는 `GO`의 실제 증거로 계산하지 않습니다.
+
+### 읽기 전용 `hplan doctor` 대응 명령
+
+`scripts/setup.sh`로 준비한 프로젝트에서 `python3 scripts/hplan_doctor.py`를 실행하세요.
+이 명령은 파일을 쓰지 않으며 Python, 확인 가능한 Codex CLI 버전, `hplan-core` 스냅샷 4개 artifact를 확인합니다.
+
+- `정상` — `$brainstorm "아이디어"`로 시작합니다.
+- `자동 복구 가능` — 출력된 명령을 실행한 뒤 doctor를 다시 실행합니다.
+- `강사 호출` — mismatch 출력을 보존하고 패키지 관리자에게 matching core snapshot을 요청합니다. doctor는 임의로 덮어쓰지 않습니다.
 
 **전체 워크플로우:**
 
@@ -149,6 +165,7 @@ Canonical 참조:
 
 ```bash
 python3 scripts/validate_agents.py
+python3 scripts/hplan_doctor.py
 python3 scripts/cogs_sentinel.py --json
 python3 -m unittest discover -s tests
 bash -n scripts/setup.sh scripts/track-probe.sh

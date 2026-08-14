@@ -100,13 +100,30 @@ cp -n hplan_codex/config.toml.example "${CODEX_HOME:-$HOME/.codex}/config.toml.e
 
 After installing (above), confirm the first useful loop from your project folder:
 
-1. Open the project in Codex CLI.
-2. Run `$brainstorm "your idea here"`.
-3. Capture the first WHETHER judgment: `GO`, `INVESTIGATE`, or `HOLD`.
-4. If the idea is still alive, create or update `harness/pain.md` with real evidence, not AI-generated seed text.
-5. Run `$evidence-rubric` and keep the score plus missing-evidence notes.
+1. Run the read-only installation check: `python3 scripts/hplan_doctor.py`.
+2. Open the project in Codex CLI.
+3. Run `$brainstorm "your idea here"`.
+4. Capture the first WHETHER judgment: `GO`, `INVESTIGATE`, or `HOLD`.
+5. If the idea is still alive, create or update `harness/pain.md` with real evidence, not AI-generated seed text.
+6. Run `$evidence-rubric` and keep the score plus missing-evidence notes.
 
 Expected first success: a documented build/no-build judgment within 10 minutes, plus the next evidence action.
+
+### Start with these three skills
+
+1. `$brainstorm` — starts with the WHETHER gate, so the first output is a specific build/no-build direction rather than a feature list.
+2. `$socratic-question` — turns that direction into explicit assumptions and exposes the highest-risk unknown before implementation.
+3. `$evidence-rubric` — scores the evidence and names what is still missing; AI-generated seeds never count as real proof for a `GO` decision.
+
+### Read-only `hplan doctor` equivalent
+
+Run `python3 scripts/hplan_doctor.py` from a project created by `scripts/setup.sh`.
+It makes no writes and checks Python, the available Codex CLI version, and all four
+`hplan-core` snapshot artifacts. The result is intentionally actionable:
+
+- `정상` — start `$brainstorm "your idea"`.
+- `자동 복구 가능` — follow the printed command, then run doctor again.
+- `강사 호출` — preserve the mismatch output and ask the package maintainer for a matching core snapshot; doctor will not overwrite it.
 
 **Full workflow:**
 
@@ -155,6 +172,7 @@ Verification commands:
 
 ```bash
 python3 scripts/validate_agents.py
+python3 scripts/hplan_doctor.py
 python3 scripts/cogs_sentinel.py --json
 python3 -m unittest discover -s tests
 bash -n scripts/setup.sh scripts/track-probe.sh
