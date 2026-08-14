@@ -10,6 +10,8 @@ import os
 import tempfile
 from pathlib import Path
 
+from hplan_doctor import BACKUP_DIR, snapshot_problem
+
 
 ARTIFACTS = (
     Path("hplan-core.lock"),
@@ -17,7 +19,6 @@ ARTIFACTS = (
     Path("docs/HPLAN_CAPABILITY_MATRIX.md"),
     Path("docs/hplan-core-adapter.json"),
 )
-BACKUP_DIR = ".hplan-core-snapshot"
 
 
 def parse_args() -> argparse.Namespace:
@@ -34,10 +35,10 @@ def parse_args() -> argparse.Namespace:
 def restore(root: Path) -> tuple[bool, str]:
     root = root.resolve()
     backup_root = root / BACKUP_DIR
+    backup_state, backup_problem = snapshot_problem(root, backup_root)
+    if backup_state is not None:
+        return False, f"로컬 복구 백업을 신뢰할 수 없습니다: {backup_problem}"
     source_paths = [backup_root / artifact for artifact in ARTIFACTS]
-    missing = [str(path.relative_to(root)) for path in source_paths if not path.is_file()]
-    if missing:
-        return False, "로컬 복구 백업이 누락되었습니다: " + ", ".join(missing)
     try:
         payloads = [(artifact, source.read_bytes()) for artifact, source in zip(ARTIFACTS, source_paths)]
         for artifact, payload in payloads:

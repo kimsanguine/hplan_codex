@@ -3,6 +3,7 @@
 
 import argparse
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -38,6 +39,8 @@ EXPECTED_POLICY = {
     "non_native_fallback": "fallback_artifact",
     "external_connector_writes": "disabled",
 }
+BACKUP_DIR = ".hplan-core-snapshot"
+FIRST_SUCCESS_SKILLS = ("brainstorm", "socratic-question", "evidence-rubric")
 
 
 def parse_args() -> argparse.Namespace:
@@ -67,6 +70,18 @@ def codex_version() -> tuple[bool, str]:
     return True, version.splitlines()[0]
 
 
+def first_success_skills_problem() -> str | None:
+    codex_home = Path(os.environ.get("CODEX_HOME", Path.home() / ".codex"))
+    missing = [
+        skill_name
+        for skill_name in FIRST_SUCCESS_SKILLS
+        if not (codex_home / "skills" / skill_name / "SKILL.md").is_file()
+    ]
+    if missing:
+        return f"CODEX_HOME={codex_home}에 누락: {', '.join(missing)}"
+    return None
+
+
 def load_json(path: Path) -> tuple[dict | None, str | None]:
     try:
         value = json.loads(path.read_text(encoding="utf-8"))
@@ -77,12 +92,13 @@ def load_json(path: Path) -> tuple[dict | None, str | None]:
     return value, None
 
 
-def snapshot_problem(root: Path) -> tuple[str | None, str | None]:
+def snapshot_problem(root: Path, artifact_root: Path | None = None) -> tuple[str | None, str | None]:
+    artifact_root = artifact_root or root
     paths = {
-        "lock": root / "hplan-core.lock",
-        "matrix": root / "docs" / "hplan-capability-matrix.json",
-        "markdown": root / "docs" / "HPLAN_CAPABILITY_MATRIX.md",
-        "adapter": root / "docs" / "hplan-core-adapter.json",
+        "lock": artifact_root / "hplan-core.lock",
+        "matrix": artifact_root / "docs" / "hplan-capability-matrix.json",
+        "markdown": artifact_root / "docs" / "HPLAN_CAPABILITY_MATRIX.md",
+        "adapter": artifact_root / "docs" / "hplan-core-adapter.json",
     }
     try:
         missing = [str(path.relative_to(root)) for path in paths.values() if not path.is_file()]
@@ -163,6 +179,12 @@ def main() -> None:
     root = parse_args().root.resolve()
     codex_ok, version = codex_version()
     problem_state, problem = snapshot_problem(root)
+    if problem_state == "recovery":
+        backup_state, backup_problem = snapshot_problem(root, root / BACKUP_DIR)
+        if backup_state is not None:
+            problem_state = "teacher"
+            problem = f"로컬 복구 백업을 신뢰할 수 없습니다: {backup_problem}"
+    skills_problem = first_success_skills_problem()
 
     print("hplan_codex doctor (read-only)")
     print(f"Python: 정상 ({sys.version.split()[0]})")
@@ -177,17 +199,25 @@ def main() -> None:
         print(f"hplan-core 스냅샷: 자동 복구 가능 ({problem})")
     else:
         print(f"hplan-core 스냅샷: 강사 호출 ({problem})")
+    if skills_problem is None:
+        print("First-success skills: 정상 (brainstorm, socratic-question, evidence-rubric)")
+    else:
+        print(f"First-success skills: 자동 복구 가능 ({skills_problem})")
 
     if problem_state == "teacher":
         print("상태: 강사 호출")
         print("다음 행동: 설치 원본의 core snapshot을 확인하고, mismatch 내용을 유지한 채 지원 담당자에게 전달하세요.")
         raise SystemExit(2)
-    if not codex_ok or problem_state == "recovery":
+    if not codex_ok or problem_state == "recovery" or skills_problem is not None:
         print("상태: 자동 복구 가능")
+        actions = []
         if not codex_ok:
-            print("다음 행동: `npm install -g @openai/codex` 후 `python3 scripts/hplan_doctor.py`를 다시 실행하세요.")
-        else:
-            print("다음 행동: `python3 scripts/repair_hplan_core_snapshot.py --root .` 후 `python3 scripts/hplan_doctor.py`를 다시 실행하세요.")
+            actions.append("`npm install -g @openai/codex`")
+        if skills_problem is not None:
+            actions.append("Codex session에서 `$skill-installer https://github.com/kimsanguine/hplan_codex` 실행")
+        if problem_state == "recovery":
+            actions.append("`python3 scripts/repair_hplan_core_snapshot.py --root .`")
+        print("다음 행동: " + " 후 ".join(actions) + " 후 `python3 scripts/hplan_doctor.py`를 다시 실행하세요.")
         raise SystemExit(1)
 
     print("상태: 정상")

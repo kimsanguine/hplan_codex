@@ -98,14 +98,17 @@ cp -n hplan_codex/config.toml.example "${CODEX_HOME:-$HOME/.codex}/config.toml.e
 
 ## First 10 Minute Success Path
 
-After installing (above), confirm the first useful loop from your project folder:
+The first success needs two separate installs: `$skill-installer` places skills in
+`$CODEX_HOME/skills`, while `scripts/setup.sh` copies only project-local harness,
+doctor, and core snapshot files. Confirm this order from your project folder:
 
-1. Run the read-only installation check: `python3 scripts/hplan_doctor.py`.
-2. Open the project in Codex CLI.
-3. Run `$brainstorm "your idea here"`.
-4. Capture the first WHETHER judgment: `GO`, `INVESTIGATE`, or `HOLD`.
-5. If the idea is still alive, create or update `harness/pain.md` with real evidence, not AI-generated seed text.
-6. Run `$evidence-rubric` and keep the score plus missing-evidence notes.
+1. In a Codex session, run `$skill-installer https://github.com/kimsanguine/hplan_codex`; use a new turn after it completes.
+2. In the project directory, run `bash scripts/setup.sh` (or the local-source setup command above).
+3. Run the read-only installation check: `python3 scripts/hplan_doctor.py`. It checks the three first-success skills in the active `$CODEX_HOME` as well as the project snapshot.
+4. Open the project in Codex CLI and run `$brainstorm "your idea here"`.
+5. Capture the first WHETHER judgment: `GO`, `INVESTIGATE`, or `HOLD`.
+6. If the idea is still alive, create or update `harness/pain.md` with real evidence, not AI-generated seed text.
+7. Run `$evidence-rubric` and keep the score plus missing-evidence notes.
 
 Expected first success: a documented build/no-build judgment within 10 minutes, plus the next evidence action.
 
@@ -118,11 +121,12 @@ Expected first success: a documented build/no-build judgment within 10 minutes, 
 ### Read-only `hplan doctor` equivalent
 
 Run `python3 scripts/hplan_doctor.py` from a project created by `scripts/setup.sh`.
-It makes no writes and checks Python, the available Codex CLI version, and all four
-`hplan-core` snapshot artifacts. The result is intentionally actionable:
+It makes no writes and checks Python, the available Codex CLI version, the three
+first-success skills in `$CODEX_HOME/skills`, and all four `hplan-core` snapshot
+artifacts. The result is intentionally actionable:
 
 - `정상` — start `$brainstorm "your idea"`.
-- `자동 복구 가능` — run `python3 scripts/repair_hplan_core_snapshot.py --root .`, then run doctor again. This explicit local repair restores only the four bundled snapshot artifacts; doctor itself never writes.
+- `자동 복구 가능` — if first-success skills are missing, run `$skill-installer https://github.com/kimsanguine/hplan_codex` in Codex. If the snapshot alone is missing, run `python3 scripts/repair_hplan_core_snapshot.py --root .`. Then run doctor again. This explicit local repair restores only the four bundled snapshot artifacts; doctor itself never writes.
 - `강사 호출` — preserve the mismatch output and ask the package maintainer for a matching core snapshot; doctor will not overwrite it.
 
 **Full workflow:**

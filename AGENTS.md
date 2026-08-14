@@ -165,7 +165,7 @@ HPLAN_CODEX_SOURCE_DIR=/path/to/hplan_codex bash scripts/setup.sh --dir=/path/to
 python3 scripts/hplan_doctor.py
 ```
 
-doctor는 Python, 가능한 Codex CLI 버전, `hplan-core.lock`과 네 개의 core artifact 일치성을 검사한다. `정상`이면 `$brainstorm "아이디어"`로 시작한다. `자동 복구 가능`이면 `python3 scripts/repair_hplan_core_snapshot.py --root .`를 명시적으로 실행한 뒤 doctor를 재실행한다. 이 복구 명령은 포함된 로컬 백업의 snapshot artifact 4개만 바꾸며 doctor 자체는 쓰지 않는다. `강사 호출`은 core snapshot mismatch이며, 임의 덮어쓰기 대신 출력 내용을 유지해 패키지 관리자에게 전달한다.
+doctor는 Python, 가능한 Codex CLI 버전, 활성 `$CODEX_HOME/skills`의 `brainstorm`·`socratic-question`·`evidence-rubric`, `hplan-core.lock`과 네 개의 core artifact 일치성을 검사한다. `scripts/setup.sh`는 스킬을 설치하지 않으므로, 첫 세 스킬이 없으면 Codex 세션에서 `$skill-installer https://github.com/kimsanguine/hplan_codex`를 실행한 뒤 doctor를 재실행한다. snapshot만 누락된 `자동 복구 가능`이면 `python3 scripts/repair_hplan_core_snapshot.py --root .`를 명시적으로 실행한 뒤 doctor를 재실행한다. 이 복구 명령은 포함된 로컬 백업의 snapshot artifact 4개만 바꾸며 doctor 자체는 쓰지 않는다. `강사 호출`은 core snapshot mismatch이며, 임의 덮어쓰기 대신 출력 내용을 유지해 패키지 관리자에게 전달한다.
 
 ---
 
@@ -283,10 +283,11 @@ printf '%s\n' '{"tool_name":"write_file","tool_input":{"file_path":"noop","conte
 ## Getting Started
 
 1. Install with `$skill-installer https://github.com/kimsanguine/hplan_codex` (or follow the manual steps in `README.md`)
-2. Copy `harness/` templates to your project and run `python3 scripts/hplan_doctor.py`
-3. Start with `$brainstorm [your idea]` because it records the first WHETHER judgment
-4. Use `$socratic-question` next to expose high-risk assumptions
-5. Use `$evidence-rubric` to name the missing real evidence before a `GO` decision
-6. Follow the plugin lifecycle: hplan → discover → architect → deliver → operate
+2. In a Codex session, install skills with `$skill-installer https://github.com/kimsanguine/hplan_codex`; start a new turn after it completes
+3. Copy `harness/` templates to your project and run `python3 scripts/hplan_doctor.py`
+4. Start with `$brainstorm [your idea]` because it records the first WHETHER judgment
+5. Use `$socratic-question` next to expose high-risk assumptions
+6. Use `$evidence-rubric` to name the missing real evidence before a `GO` decision
+7. Follow the plugin lifecycle: hplan → discover → architect → deliver → operate
 
 > "The most expensive code is code that shouldn't have been written."

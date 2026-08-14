@@ -13,6 +13,15 @@ DOCTOR = ROOT / "scripts" / "hplan_doctor.py"
 
 
 class HplanDoctorTests(unittest.TestCase):
+    def install_first_success_skills(self, codex_home: Path) -> None:
+        for skill_name in ("brainstorm", "socratic-question", "evidence-rubric"):
+            skill = codex_home / "skills" / skill_name / "SKILL.md"
+            skill.parent.mkdir(parents=True, exist_ok=True)
+            skill.write_text(
+                f"---\nname: {skill_name}\ndescription: test fixture\n---\n",
+                encoding="utf-8",
+            )
+
     def install_fixture(self, target: Path) -> None:
         env = os.environ.copy()
         env["HPLAN_CODEX_SOURCE_DIR"] = str(ROOT)
@@ -26,7 +35,7 @@ class HplanDoctorTests(unittest.TestCase):
         )
         self.assertEqual(0, result.returncode, result.stdout)
 
-    def doctor_with_codex(self, target: Path) -> subprocess.CompletedProcess[str]:
+    def doctor_with_codex(self, target: Path, codex_home: Path) -> subprocess.CompletedProcess[str]:
         fake_bin = target / "fake-bin"
         fake_bin.mkdir(exist_ok=True)
         codex = fake_bin / "codex"
@@ -34,6 +43,7 @@ class HplanDoctorTests(unittest.TestCase):
         codex.chmod(0o755)
         env = os.environ.copy()
         env["PATH"] = f"{fake_bin}{os.pathsep}{env['PATH']}"
+        env["CODEX_HOME"] = str(codex_home)
         return subprocess.run(
             [sys.executable, str(target / "scripts" / "hplan_doctor.py"), "--root", str(target)],
             text=True,
@@ -47,9 +57,11 @@ class HplanDoctorTests(unittest.TestCase):
         """Removing a required snapshot artifact must turn this normal result into recovery status."""
         with tempfile.TemporaryDirectory() as tmp:
             target = Path(tmp) / "project"
+            codex_home = Path(tmp) / "codex-home"
+            self.install_first_success_skills(codex_home)
             self.install_fixture(target)
 
-            result = self.doctor_with_codex(target)
+            result = self.doctor_with_codex(target, codex_home)
 
             self.assertEqual(0, result.returncode, result.stdout)
             self.assertIn("상태: 정상", result.stdout)
@@ -61,10 +73,12 @@ class HplanDoctorTests(unittest.TestCase):
         """A printed repair command must restore a normal local installation without a network call."""
         with tempfile.TemporaryDirectory() as tmp:
             target = Path(tmp) / "project"
+            codex_home = Path(tmp) / "codex-home"
+            self.install_first_success_skills(codex_home)
             self.install_fixture(target)
             (target / "docs" / "hplan-capability-matrix.json").unlink()
 
-            result = self.doctor_with_codex(target)
+            result = self.doctor_with_codex(target, codex_home)
 
             self.assertEqual(1, result.returncode, result.stdout)
             self.assertIn("상태: 자동 복구 가능", result.stdout)
@@ -81,7 +95,7 @@ class HplanDoctorTests(unittest.TestCase):
             )
             self.assertEqual(0, repair.returncode, repair.stdout)
 
-            repaired = self.doctor_with_codex(target)
+            repaired = self.doctor_with_codex(target, codex_home)
             self.assertEqual(0, repaired.returncode, repaired.stdout)
             self.assertIn("상태: 정상", repaired.stdout)
 
@@ -89,13 +103,15 @@ class HplanDoctorTests(unittest.TestCase):
         """Ignoring a changed core identity would report a mixed snapshot as safe."""
         with tempfile.TemporaryDirectory() as tmp:
             target = Path(tmp) / "project"
+            codex_home = Path(tmp) / "codex-home"
+            self.install_first_success_skills(codex_home)
             self.install_fixture(target)
             lock_path = target / "hplan-core.lock"
             lock = json.loads(lock_path.read_text(encoding="utf-8"))
             lock["core_source_sha256"] = "0" * 64
             lock_path.write_text(json.dumps(lock), encoding="utf-8")
 
-            result = self.doctor_with_codex(target)
+            result = self.doctor_with_codex(target, codex_home)
 
             self.assertEqual(2, result.returncode, result.stdout)
             self.assertIn("상태: 강사 호출", result.stdout)
@@ -105,6 +121,8 @@ class HplanDoctorTests(unittest.TestCase):
         """Dropping a setup manifest entry must leave a detected incomplete local installation."""
         with tempfile.TemporaryDirectory() as tmp:
             target = Path(tmp) / "project"
+            codex_home = Path(tmp) / "codex-home"
+            self.install_first_success_skills(codex_home)
             self.install_fixture(target)
 
             for rel_path in [
@@ -126,14 +144,58 @@ class HplanDoctorTests(unittest.TestCase):
         """An unreadable matrix must not escape as a traceback."""
         with tempfile.TemporaryDirectory() as tmp:
             target = Path(tmp) / "project"
+            codex_home = Path(tmp) / "codex-home"
+            self.install_first_success_skills(codex_home)
             self.install_fixture(target)
             (target / "docs" / "HPLAN_CAPABILITY_MATRIX.md").write_bytes(b"\xff\xfe")
 
-            result = self.doctor_with_codex(target)
+            result = self.doctor_with_codex(target, codex_home)
 
             self.assertEqual(2, result.returncode, result.stdout)
             self.assertIn("상태: 강사 호출", result.stdout)
             self.assertIn("Markdown capability matrix를 읽을 수 없습니다", result.stdout)
+
+    def test_doctor_blocks_first_success_until_skills_are_installed_in_codex_home(self):
+        """A project-only setup must not claim brainstorm is usable when CODEX_HOME has no hplan skills."""
+        with tempfile.TemporaryDirectory() as tmp:
+            target = Path(tmp) / "project"
+            empty_codex_home = Path(tmp) / "empty-codex-home"
+            self.install_fixture(target)
+
+            result = self.doctor_with_codex(target, empty_codex_home)
+
+            self.assertEqual(1, result.returncode, result.stdout)
+            self.assertIn("First-success skills: 자동 복구 가능", result.stdout)
+            self.assertIn("$skill-installer https://github.com/kimsanguine/hplan_codex", result.stdout)
+            self.assertNotIn("상태: 정상", result.stdout)
+
+    def test_doctor_escalates_when_live_and_repair_backup_artifacts_are_missing(self):
+        """A partial repair backup must never be offered as safe automatic recovery."""
+        with tempfile.TemporaryDirectory() as tmp:
+            target = Path(tmp) / "project"
+            codex_home = Path(tmp) / "codex-home"
+            self.install_first_success_skills(codex_home)
+            self.install_fixture(target)
+            live_matrix = target / "docs" / "hplan-capability-matrix.json"
+            backup_matrix = target / ".hplan-core-snapshot" / "docs" / "hplan-capability-matrix.json"
+            live_matrix.unlink()
+            backup_matrix.unlink()
+
+            result = self.doctor_with_codex(target, codex_home)
+
+            self.assertEqual(2, result.returncode, result.stdout)
+            self.assertIn("상태: 강사 호출", result.stdout)
+            self.assertIn("로컬 복구 백업을 신뢰할 수 없습니다", result.stdout)
+            repair = subprocess.run(
+                [sys.executable, "scripts/repair_hplan_core_snapshot.py", "--root", "."],
+                cwd=target,
+                text=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                check=False,
+            )
+            self.assertEqual(1, repair.returncode, repair.stdout)
+            self.assertFalse(live_matrix.exists(), "incomplete backup must not partially restore the live snapshot")
 
     def test_local_source_setup_does_not_require_curl_on_path(self):
         """A local installer must not reject an otherwise complete source checkout because curl is absent."""
