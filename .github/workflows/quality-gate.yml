@@ -9,6 +9,8 @@ on:
 jobs:
   quality-gate:
     runs-on: ubuntu-latest
+    env:
+      HPLAN_CORE_DIR: ${{ github.workspace }}/hplan-core-fixture
 
     steps:
       - name: Check out repository

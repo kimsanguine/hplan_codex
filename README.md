@@ -180,8 +180,10 @@ Verification commands:
 python3 scripts/validate_agents.py
 python3 scripts/hplan_doctor.py
 python3 scripts/cogs_sentinel.py --json
-# Core snapshot parity test: point at any local hplan-core checkout.
-HPLAN_CORE_DIR=/path/to/hplan-core python3 -m unittest discover -s tests
+# CI uses the checked-in `hplan-core-fixture`, pinned to a private core commit.
+# It is a parity fixture, not a public core distribution. Set HPLAN_CORE_DIR only
+# to compare an approved local core checkout during maintenance.
+python3 -m unittest discover -s tests
 bash -n scripts/setup.sh scripts/track-probe.sh
 bash scripts/setup.sh --help
 HPLAN_CODEX_SOURCE_DIR="$PWD" bash scripts/setup.sh --dir="$(mktemp -d)"

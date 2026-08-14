@@ -270,8 +270,10 @@ Verification commands:
 python3 scripts/validate_agents.py
 python3 scripts/hplan_doctor.py
 python3 scripts/cogs_sentinel.py --json
-# Core snapshot parity test에는 어느 위치의 hplan-core checkout이든 지정한다.
-HPLAN_CORE_DIR=/path/to/hplan-core python3 -m unittest discover -s tests
+# CI는 private core commit에 고정된 체크인 hplan-core-fixture를 사용한다.
+# 이는 parity fixture이며 public core 배포물이 아니다. 유지보수 시 승인된
+# local core checkout과 비교할 때만 HPLAN_CORE_DIR를 지정한다.
+python3 -m unittest discover -s tests
 bash -n scripts/setup.sh scripts/track-probe.sh
 bash scripts/setup.sh --help
 HPLAN_CODEX_SOURCE_DIR="$PWD" bash scripts/setup.sh --dir="$(mktemp -d)"
