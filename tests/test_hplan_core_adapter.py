@@ -1,4 +1,5 @@
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -7,12 +8,29 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-CORE_ROOT = Path("/Users/sanguinekim/Documents/3_Code/Vibe/Project/hplan-core")
-CORE_RENDERER = CORE_ROOT / "scripts" / "render_adapter_snapshot.py"
+
+
+def find_core_root() -> Path | None:
+    configured = os.environ.get("HPLAN_CORE_DIR")
+    candidates = [Path(configured)] if configured else []
+    candidates.extend(parent / "hplan-core" for parent in ROOT.parents)
+    for candidate in candidates:
+        renderer = candidate / "scripts" / "render_adapter_snapshot.py"
+        if renderer.is_file():
+            return candidate.resolve()
+    return None
+
+
+CORE_ROOT = find_core_root()
+CORE_RENDERER = CORE_ROOT / "scripts" / "render_adapter_snapshot.py" if CORE_ROOT else None
 
 
 class HplanCoreAdapterTests(unittest.TestCase):
     def render_core_snapshot(self, output_dir):
+        self.assertIsNotNone(
+            CORE_RENDERER,
+            "Set HPLAN_CORE_DIR to a checkout containing scripts/render_adapter_snapshot.py for core parity tests.",
+        )
         return subprocess.run(
             [sys.executable, str(CORE_RENDERER), "--target", "codex", "--output-dir", str(output_dir)],
             cwd=CORE_ROOT,

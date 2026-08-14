@@ -84,7 +84,10 @@ def snapshot_problem(root: Path) -> tuple[str | None, str | None]:
         "markdown": root / "docs" / "HPLAN_CAPABILITY_MATRIX.md",
         "adapter": root / "docs" / "hplan-core-adapter.json",
     }
-    missing = [str(path.relative_to(root)) for path in paths.values() if not path.is_file()]
+    try:
+        missing = [str(path.relative_to(root)) for path in paths.values() if not path.is_file()]
+    except OSError as exc:
+        return "teacher", f"snapshot 파일 상태를 읽을 수 없습니다: {exc}"
     if missing:
         return "recovery", "필수 파일 누락: " + ", ".join(missing)
 
@@ -143,7 +146,10 @@ def snapshot_problem(root: Path) -> tuple[str | None, str | None]:
     if not isinstance(aliases, list) or len(aliases) != 3 or alias_map != EXPECTED_ALIASES:
         return "teacher", "3개 compatibility alias가 core 계약과 일치하지 않습니다"
 
-    markdown = paths["markdown"].read_text(encoding="utf-8")
+    try:
+        markdown = paths["markdown"].read_text(encoding="utf-8")
+    except (OSError, UnicodeError) as exc:
+        return "teacher", f"Markdown capability matrix를 읽을 수 없습니다: {exc}"
     if f"Contract version: `{lock['contract_version']}`" not in markdown or "Target: `codex`" not in markdown:
         return "teacher", "Markdown capability matrix의 버전 또는 target이 JSON과 일치하지 않습니다"
     if any(f"| {capability_id} |" not in markdown for capability_id in ids):
@@ -181,7 +187,7 @@ def main() -> None:
         if not codex_ok:
             print("다음 행동: `npm install -g @openai/codex` 후 `python3 scripts/hplan_doctor.py`를 다시 실행하세요.")
         else:
-            print("다음 행동: 설치 원본에서 `bash scripts/setup.sh --dir=.` 후 `python3 scripts/hplan_doctor.py`를 다시 실행하세요.")
+            print("다음 행동: `python3 scripts/repair_hplan_core_snapshot.py --root .` 후 `python3 scripts/hplan_doctor.py`를 다시 실행하세요.")
         raise SystemExit(1)
 
     print("상태: 정상")

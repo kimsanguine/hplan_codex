@@ -103,7 +103,7 @@ cp -n hplan_codex/config.toml.example "${CODEX_HOME:-$HOME/.codex}/config.toml.e
 이 명령은 파일을 쓰지 않으며 Python, 확인 가능한 Codex CLI 버전, `hplan-core` 스냅샷 4개 artifact를 확인합니다.
 
 - `정상` — `$brainstorm "아이디어"`로 시작합니다.
-- `자동 복구 가능` — 출력된 명령을 실행한 뒤 doctor를 다시 실행합니다.
+- `자동 복구 가능` — `python3 scripts/repair_hplan_core_snapshot.py --root .`를 실행한 뒤 doctor를 다시 실행합니다. 이 명시적 로컬 복구는 포함된 snapshot artifact 4개만 되돌리며, doctor 자체는 절대 쓰지 않습니다.
 - `강사 호출` — mismatch 출력을 보존하고 패키지 관리자에게 matching core snapshot을 요청합니다. doctor는 임의로 덮어쓰지 않습니다.
 
 **전체 워크플로우:**
@@ -151,6 +151,7 @@ hplan_codex는 Codex CLI 샌드박스 안에서 실행됩니다. Codex 0.130.0�
 - `$skill-installer`를 통한 스킬 설치
 - `bash scripts/setup.sh`를 통한 harness/script 부트스트랩
 - `bash scripts/track-probe.sh` 수동 프로브 실행
+- `python3 scripts/hplan_doctor.py` 읽기 전용 설치 및 core snapshot 점검
 - `python3 scripts/validate_agents.py` 정적 스킬/문서 검증
 
 예정 또는 adapter 의존 기능은
@@ -167,7 +168,8 @@ Canonical 참조:
 python3 scripts/validate_agents.py
 python3 scripts/hplan_doctor.py
 python3 scripts/cogs_sentinel.py --json
-python3 -m unittest discover -s tests
+# Core snapshot parity test에는 어느 위치의 hplan-core checkout이든 지정합니다.
+HPLAN_CORE_DIR=/path/to/hplan-core python3 -m unittest discover -s tests
 bash -n scripts/setup.sh scripts/track-probe.sh
 bash scripts/setup.sh --help
 HPLAN_CODEX_SOURCE_DIR="$PWD" bash scripts/setup.sh --dir="$(mktemp -d)"

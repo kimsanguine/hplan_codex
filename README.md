@@ -122,7 +122,7 @@ It makes no writes and checks Python, the available Codex CLI version, and all f
 `hplan-core` snapshot artifacts. The result is intentionally actionable:
 
 - `정상` — start `$brainstorm "your idea"`.
-- `자동 복구 가능` — follow the printed command, then run doctor again.
+- `자동 복구 가능` — run `python3 scripts/repair_hplan_core_snapshot.py --root .`, then run doctor again. This explicit local repair restores only the four bundled snapshot artifacts; doctor itself never writes.
 - `강사 호출` — preserve the mismatch output and ask the package maintainer for a matching core snapshot; doctor will not overwrite it.
 
 **Full workflow:**
@@ -158,6 +158,7 @@ Currently executable:
 - Skill installation via `$skill-installer`
 - Harness/script bootstrap via `bash scripts/setup.sh`
 - Manual probe invocation via `bash scripts/track-probe.sh`
+- Read-only installation and core snapshot check via `python3 scripts/hplan_doctor.py`
 - Static skill/doc validation via `python3 scripts/validate_agents.py`
 
 Planned or adapter-dependent capabilities are tracked in
@@ -174,7 +175,8 @@ Verification commands:
 python3 scripts/validate_agents.py
 python3 scripts/hplan_doctor.py
 python3 scripts/cogs_sentinel.py --json
-python3 -m unittest discover -s tests
+# Core snapshot parity test: point at any local hplan-core checkout.
+HPLAN_CORE_DIR=/path/to/hplan-core python3 -m unittest discover -s tests
 bash -n scripts/setup.sh scripts/track-probe.sh
 bash scripts/setup.sh --help
 HPLAN_CODEX_SOURCE_DIR="$PWD" bash scripts/setup.sh --dir="$(mktemp -d)"

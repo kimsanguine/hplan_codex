@@ -165,7 +165,7 @@ HPLAN_CODEX_SOURCE_DIR=/path/to/hplan_codex bash scripts/setup.sh --dir=/path/to
 python3 scripts/hplan_doctor.py
 ```
 
-doctor는 Python, 가능한 Codex CLI 버전, `hplan-core.lock`과 네 개의 core artifact 일치성을 검사한다. `정상`이면 `$brainstorm "아이디어"`로 시작한다. `자동 복구 가능`이면 출력된 설치 명령을 실행한 뒤 doctor를 재실행한다. `강사 호출`은 core snapshot mismatch이며, 임의 덮어쓰기 대신 출력 내용을 유지해 패키지 관리자에게 전달한다.
+doctor는 Python, 가능한 Codex CLI 버전, `hplan-core.lock`과 네 개의 core artifact 일치성을 검사한다. `정상`이면 `$brainstorm "아이디어"`로 시작한다. `자동 복구 가능`이면 `python3 scripts/repair_hplan_core_snapshot.py --root .`를 명시적으로 실행한 뒤 doctor를 재실행한다. 이 복구 명령은 포함된 로컬 백업의 snapshot artifact 4개만 바꾸며 doctor 자체는 쓰지 않는다. `강사 호출`은 core snapshot mismatch이며, 임의 덮어쓰기 대신 출력 내용을 유지해 패키지 관리자에게 전달한다.
 
 ---
 
@@ -261,7 +261,7 @@ Invoke the probe with Bash:
 bash scripts/track-probe.sh
 ```
 
-Currently executable: `$skill-installer`, `bash scripts/setup.sh`, `bash scripts/track-probe.sh`, and `python3 scripts/validate_agents.py`.
+Currently executable: `$skill-installer`, `bash scripts/setup.sh`, `bash scripts/track-probe.sh`, `python3 scripts/hplan_doctor.py` (read-only), `python3 scripts/repair_hplan_core_snapshot.py --root .` (explicit local snapshot repair), and `python3 scripts/validate_agents.py`.
 Planned or adapter-dependent references are maintained in `skills/ROUTING_REGISTRY.md`.
 
 Verification commands:
@@ -270,7 +270,8 @@ Verification commands:
 python3 scripts/validate_agents.py
 python3 scripts/hplan_doctor.py
 python3 scripts/cogs_sentinel.py --json
-python3 -m unittest discover -s tests
+# Core snapshot parity test에는 어느 위치의 hplan-core checkout이든 지정한다.
+HPLAN_CORE_DIR=/path/to/hplan-core python3 -m unittest discover -s tests
 bash -n scripts/setup.sh scripts/track-probe.sh
 bash scripts/setup.sh --help
 HPLAN_CODEX_SOURCE_DIR="$PWD" bash scripts/setup.sh --dir="$(mktemp -d)"
