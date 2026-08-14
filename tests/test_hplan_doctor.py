@@ -94,7 +94,7 @@ class HplanDoctorTests(unittest.TestCase):
             codex_home = Path(tmp) / "codex-home"
             self.install_first_success_skills(codex_home)
             self.install_fixture(target)
-            (target / "docs" / "hplan-capability-matrix.json").unlink()
+            (target / "runtime" / "hplan-core" / "hplan-capability-matrix.json").unlink()
 
             result = self.doctor_with_codex(target, codex_home)
 
@@ -124,7 +124,7 @@ class HplanDoctorTests(unittest.TestCase):
             codex_home = Path(tmp) / "codex-home"
             self.install_first_success_skills(codex_home)
             self.install_fixture(target)
-            lock_path = target / "hplan-core.lock"
+            lock_path = target / "runtime" / "hplan-core" / "hplan-core.lock"
             lock = json.loads(lock_path.read_text(encoding="utf-8"))
             lock["core_source_sha256"] = "0" * 64
             lock_path.write_text(json.dumps(lock), encoding="utf-8")
@@ -146,14 +146,14 @@ class HplanDoctorTests(unittest.TestCase):
             for rel_path in [
                 "scripts/hplan_doctor.py",
                 "scripts/repair_hplan_core_snapshot.py",
-                "hplan-core.lock",
-                "docs/hplan-capability-matrix.json",
-                "docs/HPLAN_CAPABILITY_MATRIX.md",
-                "docs/hplan-core-adapter.json",
-                ".hplan-core-snapshot/hplan-core.lock",
-                ".hplan-core-snapshot/docs/hplan-capability-matrix.json",
-                ".hplan-core-snapshot/docs/HPLAN_CAPABILITY_MATRIX.md",
-                ".hplan-core-snapshot/docs/hplan-core-adapter.json",
+                "runtime/hplan-core/hplan-core.lock",
+                "runtime/hplan-core/hplan-capability-matrix.json",
+                "runtime/hplan-core/HPLAN_CAPABILITY_MATRIX.md",
+                "runtime/hplan-core/hplan-core-adapter.json",
+                ".hplan-core-snapshot/runtime/hplan-core/hplan-core.lock",
+                ".hplan-core-snapshot/runtime/hplan-core/hplan-capability-matrix.json",
+                ".hplan-core-snapshot/runtime/hplan-core/HPLAN_CAPABILITY_MATRIX.md",
+                ".hplan-core-snapshot/runtime/hplan-core/hplan-core-adapter.json",
             ]:
                 with self.subTest(rel_path=rel_path):
                     self.assertTrue((target / rel_path).is_file(), rel_path)
@@ -165,7 +165,7 @@ class HplanDoctorTests(unittest.TestCase):
             codex_home = Path(tmp) / "codex-home"
             self.install_first_success_skills(codex_home)
             self.install_fixture(target)
-            (target / "docs" / "HPLAN_CAPABILITY_MATRIX.md").write_bytes(b"\xff\xfe")
+            (target / "runtime" / "hplan-core" / "HPLAN_CAPABILITY_MATRIX.md").write_bytes(b"\xff\xfe")
 
             result = self.doctor_with_codex(target, codex_home)
 
@@ -196,8 +196,8 @@ class HplanDoctorTests(unittest.TestCase):
             codex_home = Path(tmp) / "codex-home"
             self.install_first_success_skills(codex_home)
             self.install_fixture(target)
-            live_matrix = target / "docs" / "hplan-capability-matrix.json"
-            backup_matrix = target / ".hplan-core-snapshot" / "docs" / "hplan-capability-matrix.json"
+            live_matrix = target / "runtime" / "hplan-core" / "hplan-capability-matrix.json"
+            backup_matrix = target / ".hplan-core-snapshot" / "runtime" / "hplan-core" / "hplan-capability-matrix.json"
             live_matrix.unlink()
             backup_matrix.unlink()
 
@@ -247,28 +247,29 @@ class HplanDoctorTests(unittest.TestCase):
                 with self.subTest(artifact=artifact):
                     self.assertEqual(expected, (target / artifact).read_bytes())
 
-    def test_repair_rejects_root_docs_symlink_without_touching_external_files(self):
-        """A docs symlink must not redirect staging or replacement outside the requested root."""
+    def test_repair_rejects_root_runtime_symlink_without_touching_external_files(self):
+        """A runtime symlink must not redirect staging or replacement outside the requested root."""
         with tempfile.TemporaryDirectory() as tmp:
             target = Path(tmp) / "project"
-            external_docs = Path(tmp) / "external-docs"
+            external_runtime = Path(tmp) / "external-runtime"
             self.install_fixture(target)
-            docs_original = target / "docs-original"
-            (target / "docs").rename(docs_original)
-            external_docs.mkdir()
+            lock_before = (target / "runtime" / "hplan-core" / "hplan-core.lock").read_bytes()
+            runtime_original = target / "runtime-original"
+            (target / "runtime").rename(runtime_original)
+            external_runtime.mkdir()
             external_before = {}
             for artifact in repair.ARTIFACTS[1:]:
-                external_path = external_docs / artifact.name
+                external_path = external_runtime / "hplan-core" / artifact.name
+                external_path.parent.mkdir(parents=True, exist_ok=True)
                 external_path.write_bytes(f"external-{artifact.name}".encode("utf-8"))
                 external_before[external_path] = external_path.read_bytes()
-            lock_before = (target / "hplan-core.lock").read_bytes()
-            os.symlink(external_docs, target / "docs", target_is_directory=True)
+            os.symlink(external_runtime, target / "runtime", target_is_directory=True)
 
             success, message = repair.restore(target)
 
             self.assertFalse(success)
             self.assertIn("심볼릭 링크", message)
-            self.assertEqual(lock_before, (target / "hplan-core.lock").read_bytes())
+            self.assertEqual(lock_before, (runtime_original / "hplan-core" / "hplan-core.lock").read_bytes())
             for path, expected in external_before.items():
                 with self.subTest(path=path):
                     self.assertEqual(expected, path.read_bytes())
@@ -279,9 +280,9 @@ class HplanDoctorTests(unittest.TestCase):
             target = Path(tmp) / "project"
             external_matrix = Path(tmp) / "external-backup-matrix.json"
             self.install_fixture(target)
-            backup_matrix = target / ".hplan-core-snapshot" / "docs" / "hplan-capability-matrix.json"
+            backup_matrix = target / ".hplan-core-snapshot" / "runtime" / "hplan-core" / "hplan-capability-matrix.json"
             external_matrix.write_bytes(backup_matrix.read_bytes())
-            backup_matrix.rename(target / ".hplan-core-snapshot" / "docs" / "matrix-original.json")
+            backup_matrix.rename(target / ".hplan-core-snapshot" / "runtime" / "hplan-core" / "matrix-original.json")
             os.symlink(external_matrix, backup_matrix)
             live_before = {artifact: (target / artifact).read_bytes() for artifact in repair.ARTIFACTS}
             external_before = external_matrix.read_bytes()

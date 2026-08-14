@@ -132,16 +132,16 @@ Expected first success: a documented build/no-build judgment within 10 minutes, 
 Run `python3 scripts/hplan_doctor.py` from a project created by `scripts/setup.sh`.
 It makes no writes and checks Python, the available Codex CLI version, the three
 first-success skills in `$CODEX_HOME/skills`, plus the four total
-`hplan-core` snapshot artifacts: `hplan-core.lock` and three files in `docs/`.
+`hplan-core` snapshot artifacts: four files in `runtime/hplan-core/`.
 The result is intentionally actionable:
 
 - `정상` — start `$brainstorm "your idea"`.
-- `자동 복구 가능` — if first-success skills are missing, run `$skill-installer https://github.com/kimsanguine/hplan_codex` in Codex. If the snapshot alone is missing, run `python3 scripts/repair_hplan_core_snapshot.py --root .`. Then run doctor again. This explicit local repair restores only the four total snapshot artifacts (`hplan-core.lock` plus three `docs/` files); doctor itself never writes.
+- `자동 복구 가능` — if first-success skills are missing, run `$skill-installer https://github.com/kimsanguine/hplan_codex` in Codex. If the snapshot alone is missing, run `python3 scripts/repair_hplan_core_snapshot.py --root .`. Then run doctor again. This explicit local repair restores only the four runtime snapshot artifacts; doctor itself never writes.
 - `강사 호출` — preserve the mismatch output and ask the package maintainer for a matching core snapshot; doctor will not overwrite it.
 
-The project snapshot has four total artifacts: `hplan-core.lock` plus
-`docs/hplan-capability-matrix.json`, `docs/HPLAN_CAPABILITY_MATRIX.md`, and
-`docs/hplan-core-adapter.json`. The repair source is the project-local
+The project snapshot has four total artifacts in `runtime/hplan-core/`:
+`hplan-core.lock`, `hplan-capability-matrix.json`, `HPLAN_CAPABILITY_MATRIX.md`,
+and `hplan-core-adapter.json`. The repair source is the project-local
 `.hplan-core-snapshot/` backup; the checked-in `hplan-core-fixture/` directory is
 CI-only parity data and is never a repair source.
 
@@ -151,10 +151,7 @@ CI-only parity data and is never a repair source.
 $brainstorm → $socratic-question → $opp-tree → $prd → $conductor
 ```
 
-Reference docs:
-- [Glossary](docs/GLOSSARY.md)
-- [Illustrative case studies](docs/CASE_STUDIES.md)
-- [Contributing](CONTRIBUTING.md)
+Public repository policy: project `docs/` and `.archive/` are excluded. Public runtime data is limited to `runtime/hplan-core/`; longer guides and historical material remain private.
 
 ---
 
@@ -185,10 +182,7 @@ Currently executable:
 Planned or adapter-dependent capabilities are tracked in
 [skills/ROUTING_REGISTRY.md](skills/ROUTING_REGISTRY.md).
 
-Canonical references:
-- PRD numbering contract: [docs/PRD_SECTION_MAP.md](docs/PRD_SECTION_MAP.md)
-- Signal Gate evidence schema: [docs/SIGNAL_GATE_SCHEMA.md](docs/SIGNAL_GATE_SCHEMA.md)
-- Skill status registry: [skills/ROUTING_REGISTRY.md](skills/ROUTING_REGISTRY.md)
+Canonical public references: [skill status registry](skills/ROUTING_REGISTRY.md) and the runtime core snapshot in `runtime/hplan-core/`.
 
 Verification commands:
 

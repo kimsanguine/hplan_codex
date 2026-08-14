@@ -46,7 +46,7 @@ Declare the permitted work scope before delegated execution. Stop for approval b
 
 ## Codex Adapter Truth Boundary
 
-`hplan-core.lock` and `docs/hplan-capability-matrix.json` are the Codex snapshot of the core contract. Read a capability's `support_state` before invoking it:
+`runtime/hplan-core/hplan-core.lock` and `runtime/hplan-core/hplan-capability-matrix.json` are the Codex snapshot of the core contract. Read a capability's `support_state` before invoking it:
 
 - `native` is the only state that may be presented as directly available in this environment.
 - `adapter-required` is not active. It needs a target adapter; use its local fallback artifact or produce a draft only.
@@ -108,7 +108,7 @@ $brainstorm → $socratic-question → $opp-tree → $assumptions → $cost-sim 
 
 ### Bundled local skill folders
 
-The 28 local folders below are not a claim of core-native support. For every core capability, use `docs/hplan-capability-matrix.json` as the authoritative support state; non-native capabilities remain adapter-required or unavailable with local/draft-only fallbacks.
+The 28 local folders below are not a claim of core-native support. For every core capability, use `runtime/hplan-core/hplan-capability-matrix.json` as the authoritative support state; non-native capabilities remain adapter-required or unavailable with local/draft-only fallbacks.
 
 | Plugin | Skills |
 |---|---|
@@ -169,7 +169,7 @@ HPLAN_CODEX_SOURCE_DIR=/path/to/hplan_codex bash scripts/setup.sh --dir=/path/to
 python3 scripts/hplan_doctor.py
 ```
 
-doctor는 Python, 가능한 Codex CLI 버전, `$CODEX_HOME/skills`의 `brainstorm`·`socratic-question`·`evidence-rubric`, 총 4개 snapshot artifact(`hplan-core.lock`과 `docs/`의 파일 3개) 일치성을 검사한다. `scripts/setup.sh`는 스킬을 설치하지 않으므로, 첫 세 스킬이 없으면 Codex 세션에서 `$skill-installer https://github.com/kimsanguine/hplan_codex`를 실행한 뒤 doctor를 재실행한다. snapshot만 누락된 `자동 복구 가능`이면 `python3 scripts/repair_hplan_core_snapshot.py --root .`를 명시적으로 실행한 뒤 doctor를 재실행한다. 이 복구 명령은 프로젝트 로컬 `.hplan-core-snapshot/` backup의 총 4개 snapshot artifact만 바꾸며 doctor 자체는 쓰지 않는다. 체크인 `hplan-core-fixture/`는 CI parity fixture이지 복구 원본이 아니다. `강사 호출`은 core snapshot mismatch이며, 임의 덮어쓰기 대신 출력 내용을 유지해 패키지 관리자에게 전달한다.
+doctor는 Python, 가능한 Codex CLI 버전, `$CODEX_HOME/skills`의 `brainstorm`·`socratic-question`·`evidence-rubric`, `runtime/hplan-core/`의 총 4개 snapshot artifact 일치성을 검사한다. `scripts/setup.sh`는 스킬을 설치하지 않으므로, 첫 세 스킬이 없으면 Codex 세션에서 `$skill-installer https://github.com/kimsanguine/hplan_codex`를 실행한 뒤 doctor를 재실행한다. snapshot만 누락된 `자동 복구 가능`이면 `python3 scripts/repair_hplan_core_snapshot.py --root .`를 명시적으로 실행한 뒤 doctor를 재실행한다. 이 복구 명령은 프로젝트 로컬 `.hplan-core-snapshot/` backup의 `runtime/hplan-core/` artifact만 바꾸며 doctor 자체는 쓰지 않는다. 체크인 `hplan-core-fixture/`는 CI parity fixture이지 복구 원본이 아니다. `강사 호출`은 core snapshot mismatch이며, 임의 덮어쓰기 대신 출력 내용을 유지해 패키지 관리자에게 전달한다.
 
 ---
 
@@ -208,7 +208,7 @@ Before proceeding to build, 4 evidence files must exist in `harness/`:
 Run `$evidence-rubric` to score your evidence (0-100 points).
 `GO` / `build` requires score ≥ 75 plus mandatory economic pain, 2+ real interview lines, and the required real-evidence files. Score ≥ 55 without all mandatory `GO` conditions → `INVESTIGATE` / `interview`; 35-54 → `PIVOT`; <35 → `HOLD`.
 
-Use `docs/SIGNAL_GATE_SCHEMA.md` as the canonical evidence schema. Evidence marked `ai_generated_seed` is allowed only as discovery scaffolding and scores 0; it must not be counted as real pain, market, competitor, or COGS evidence for a `GO` decision.
+Treat `real_evidence` as the only scoreable evidence status. `ai_generated_seed` is allowed only as discovery scaffolding and scores 0; it must not be counted as real pain, market, competitor, or COGS evidence for a `GO` decision.
 
 ---
 

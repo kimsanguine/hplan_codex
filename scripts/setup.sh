@@ -115,20 +115,20 @@ for f in cogs_sentinel.py decision_log.py exclusions_registry.py generate_report
 done
 chmod +x "$TARGET_DIR/scripts/track-probe.sh" 2>/dev/null || true
 
-# 7) Copy hplan-core snapshot (required — doctor uses it read-only)
+# 7) Copy hplan-core runtime snapshot (required — doctor uses it read-only)
 echo "Copying hplan-core snapshot..."
-mkdir -p "$TARGET_DIR/docs"
-fetch "hplan-core.lock" "$TARGET_DIR/hplan-core.lock" required
+mkdir -p "$TARGET_DIR/runtime/hplan-core"
+fetch "runtime/hplan-core/hplan-core.lock" "$TARGET_DIR/runtime/hplan-core/hplan-core.lock" required
 for f in hplan-capability-matrix.json HPLAN_CAPABILITY_MATRIX.md hplan-core-adapter.json; do
-  fetch "docs/$f" "$TARGET_DIR/docs/$f" required
+  fetch "runtime/hplan-core/$f" "$TARGET_DIR/runtime/hplan-core/$f" required
 done
 
 # 8) Copy a local backup for the explicit core snapshot repair command.
 echo "Copying hplan-core repair backup..."
-mkdir -p "$TARGET_DIR/.hplan-core-snapshot/docs"
-fetch "hplan-core.lock" "$TARGET_DIR/.hplan-core-snapshot/hplan-core.lock" required
+mkdir -p "$TARGET_DIR/.hplan-core-snapshot/runtime/hplan-core"
+fetch "runtime/hplan-core/hplan-core.lock" "$TARGET_DIR/.hplan-core-snapshot/runtime/hplan-core/hplan-core.lock" required
 for f in hplan-capability-matrix.json HPLAN_CAPABILITY_MATRIX.md hplan-core-adapter.json; do
-  fetch "docs/$f" "$TARGET_DIR/.hplan-core-snapshot/docs/$f" required
+  fetch "runtime/hplan-core/$f" "$TARGET_DIR/.hplan-core-snapshot/runtime/hplan-core/$f" required
 done
 
 # 9) Fail loud on required-file failures (no false "installed" success)

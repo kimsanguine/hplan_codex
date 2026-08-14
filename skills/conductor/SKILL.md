@@ -10,7 +10,7 @@ metadata:
 
 구현 플랜(PRD path 또는 delivery brief)을 입력으로 받아 실행한다.
 
-PRD section numbering follows `docs/PRD_SECTION_MAP.md`: §1 ICP, §7 Agent Role, §11 Output Specification, §12 Metrics, §14 Failure/HITL.
+PRD section numbering: §1 ICP, §7 Agent Role, §11 Output Specification, §12 Metrics, §14 Failure/HITL.
 
 ---
 

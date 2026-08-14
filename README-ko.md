@@ -110,13 +110,13 @@ cp -n hplan_codex/config.toml.example "${CODEX_HOME:-$HOME/.codex}/config.toml.e
 ### 읽기 전용 `hplan doctor` 대응 명령
 
 `scripts/setup.sh`로 준비한 프로젝트에서 `python3 scripts/hplan_doctor.py`를 실행하세요.
-이 명령은 파일을 쓰지 않으며 Python, 확인 가능한 Codex CLI 버전, `$CODEX_HOME/skills`의 첫 성공 스킬 3개, `hplan-core.lock`과 `docs/`의 파일 3개로 이루어진 총 4개 snapshot artifact를 확인합니다.
+이 명령은 파일을 쓰지 않으며 Python, 확인 가능한 Codex CLI 버전, `$CODEX_HOME/skills`의 첫 성공 스킬 3개, `runtime/hplan-core/`의 총 4개 snapshot artifact를 확인합니다.
 
 - `정상` — `$brainstorm "아이디어"`로 시작합니다.
-- `자동 복구 가능` — 첫 성공 스킬이 없으면 Codex에서 `$skill-installer https://github.com/kimsanguine/hplan_codex`를 실행합니다. snapshot만 누락되었으면 `python3 scripts/repair_hplan_core_snapshot.py --root .`를 실행합니다. 그 뒤 doctor를 다시 실행합니다. 이 명시적 로컬 복구는 `hplan-core.lock`과 `docs/` 파일 3개, 총 4개의 snapshot artifact만 되돌리며, doctor 자체는 절대 쓰지 않습니다.
+- `자동 복구 가능` — 첫 성공 스킬이 없으면 Codex에서 `$skill-installer https://github.com/kimsanguine/hplan_codex`를 실행합니다. snapshot만 누락되었으면 `python3 scripts/repair_hplan_core_snapshot.py --root .`를 실행합니다. 그 뒤 doctor를 다시 실행합니다. 이 명시적 로컬 복구는 runtime snapshot artifact 4개만 되돌리며, doctor 자체는 절대 쓰지 않습니다.
 - `강사 호출` — mismatch 출력을 보존하고 패키지 관리자에게 matching core snapshot을 요청합니다. doctor는 임의로 덮어쓰지 않습니다.
 
-프로젝트 snapshot은 총 4개 artifact입니다: `hplan-core.lock`, `docs/hplan-capability-matrix.json`, `docs/HPLAN_CAPABILITY_MATRIX.md`, `docs/hplan-core-adapter.json`. 복구 원본은 프로젝트 로컬 `.hplan-core-snapshot/` backup이며, 체크인된 `hplan-core-fixture/`는 CI parity 전용 데이터이므로 복구 원본이 아닙니다.
+프로젝트 snapshot은 `runtime/hplan-core/`의 총 4개 artifact입니다: `hplan-core.lock`, `hplan-capability-matrix.json`, `HPLAN_CAPABILITY_MATRIX.md`, `hplan-core-adapter.json`. 복구 원본은 프로젝트 로컬 `.hplan-core-snapshot/` backup이며, 체크인된 `hplan-core-fixture/`는 CI parity 전용 데이터이므로 복구 원본이 아닙니다.
 
 **전체 워크플로우:**
 
@@ -124,10 +124,7 @@ cp -n hplan_codex/config.toml.example "${CODEX_HOME:-$HOME/.codex}/config.toml.e
 $brainstorm → $socratic-question → $opp-tree → $prd → $conductor
 ```
 
-참고 문서:
-- [용어집](docs/GLOSSARY.md)
-- [예시 케이스 스터디](docs/CASE_STUDIES.md)
-- [기여 가이드](CONTRIBUTING.md)
+공개 저장소 정책: 프로젝트 `docs/`와 `.archive/`는 제외합니다. 공개 runtime 데이터는 `runtime/hplan-core/`로 한정하고, 긴 가이드와 과거 자료는 private로 유지합니다.
 
 ---
 
@@ -170,10 +167,7 @@ hplan_codex는 Codex CLI 샌드박스 안에서 실행됩니다. 아래 샌드�
 예정 또는 adapter 의존 기능은
 [skills/ROUTING_REGISTRY.md](skills/ROUTING_REGISTRY.md)에서 관리합니다.
 
-Canonical 참조:
-- PRD 번호 계약: [docs/PRD_SECTION_MAP.md](docs/PRD_SECTION_MAP.md)
-- Signal Gate 증거 schema: [docs/SIGNAL_GATE_SCHEMA.md](docs/SIGNAL_GATE_SCHEMA.md)
-- 스킬 상태 registry: [skills/ROUTING_REGISTRY.md](skills/ROUTING_REGISTRY.md)
+공개 canonical 참조: [스킬 상태 registry](skills/ROUTING_REGISTRY.md)와 `runtime/hplan-core/` core snapshot입니다.
 
 검증 명령:
 
