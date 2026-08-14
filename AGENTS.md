@@ -11,29 +11,56 @@
 hplan_codex is a PM Build Gate system for Codex CLI.
 It gives AI coding agents a structured decision-making framework — preventing you from building the wrong thing.
 
-**5 plugins · 28 skills · AGENTS.md based**
+**5 plugins · 28 local skill folders · AGENTS.md based**
 
 ---
 
-## Core Principles
+## 9 Behavioral Rules
 
-### P1 — Determinism First
-LLM is for: classification, drafting, summarizing, natural language generation.
-LLM is NOT for: routing, retry policy, status code handling, deterministic transformation.
-Do not use LLM as an if-statement.
+### Rule 1 — Think Before Coding
+State material assumptions. If ambiguity changes the outcome, request clarification before acting.
 
-### P2 — Fail Loud
-If uncertain, say so explicitly. "Done/Pass/Working" is false if there are skipped or unverified steps.
-Never hide uncertainty.
+### Rule 2 — Simplicity First
+Use the minimum implementation that satisfies the stated need; do not add speculative features.
 
-### P3 — Surgical Changes
-Only touch what is necessary. No adjacent refactoring. No speculative features.
+### Rule 3 — Surgical Changes
+Change only the requested surface and preserve intentional surrounding work.
 
-### P4 — Goal-Driven Execution
-Convert instructions into verifiable goals. No "done" reports without verification.
+### Rule 4 — Goal-Driven Execution
+Translate work into verifiable goals and cite verification before completion.
 
-### P5 — Think Before Coding
-State assumptions explicitly. If ambiguous, stop and ask instead of guessing.
+### Rule 5 — Models for Judgment Tasks Only
+Use models for drafting, summarizing, classification, and judgment tasks. Use deterministic logic for deterministic control decisions such as routing, retry policy, status handling, and transformations.
+
+### Rule 6 — Tests Verify Intent
+Design tests that fail when the intended behavior changes; do not treat a passing command as customer-facing proof.
+
+### Rule 7 — Checkpoint After Every Significant Step
+After significant work, state what changed, what was verified, and what remains.
+
+### Rule 8 — Fail Loud
+Expose uncertainty and incomplete verification; do not present skipped work as complete.
+
+### Rule 9 — Agent Scope Declaration
+Declare the permitted work scope before delegated execution. Stop for approval before irreversible actions.
+
+## Codex Adapter Truth Boundary
+
+`hplan-core.lock` and `docs/hplan-capability-matrix.json` are the Codex snapshot of the core contract. Read a capability's `support_state` before invoking it:
+
+- `native` is the only state that may be presented as directly available in this environment.
+- `adapter-required` is not active. It needs a target adapter; use its local fallback artifact or produce a draft only.
+- `unavailable` is not active. Do not invoke it; use only its documented local/draft-only fallback.
+
+External connector writes remain disabled. This package may create local artifacts and drafts, but it does not activate, authorize, or write through external connectors.
+
+### Compatibility aliases
+
+| Alias | Compatibility route | Boundary |
+| --- | --- | --- |
+| roadmap | roadmap → prd --mode roadmap | Compatibility alias; preserve the mode. |
+| router | router → orchestration --pattern router | Compatibility alias; preserve the pattern. |
+| stakeholder-update | stakeholder-update → ops-review | Compatibility alias; draft-only unless a separately authorized adapter exists. |
 
 ---
 
@@ -77,9 +104,9 @@ $prd [feature or product]
 $brainstorm → $socratic-question → $opp-tree → $assumptions → $cost-sim → $prd → $conductor
 ```
 
-### All 28 Skills
+### Bundled local skill folders
 
-For canonical `available`, `planned`, and `adapter-dependent` status, see `skills/ROUTING_REGISTRY.md`.
+The 28 local folders below are not a claim of core-native support. For every core capability, use `docs/hplan-capability-matrix.json` as the authoritative support state; non-native capabilities remain adapter-required or unavailable with local/draft-only fallbacks.
 
 | Plugin | Skills |
 |---|---|

@@ -14,6 +14,38 @@ ALLOWED_REFERENCE_STATUSES = {
     "script-only",
     "external",
 }
+CORE_ADAPTER_FILES = {
+    "lock": pathlib.Path("hplan-core.lock"),
+    "matrix": pathlib.Path("docs/hplan-capability-matrix.json"),
+    "adapter": pathlib.Path("docs/hplan-core-adapter.json"),
+}
+CORE_RULE_IDS = {
+    "think-before-coding",
+    "simplicity-first",
+    "surgical-changes",
+    "goal-driven-execution",
+    "models-for-judgment-only",
+    "tests-verify-intent",
+    "checkpoint-after-significant-step",
+    "fail-loud",
+    "agent-scope-declaration",
+}
+CORE_ALIASES = {
+    "roadmap": "prd",
+    "router": "orchestration",
+    "stakeholder-update": "ops-review",
+}
+CORE_RULE_HEADINGS = {
+    "Rule 1 — Think Before Coding",
+    "Rule 2 — Simplicity First",
+    "Rule 3 — Surgical Changes",
+    "Rule 4 — Goal-Driven Execution",
+    "Rule 5 — Models for Judgment Tasks Only",
+    "Rule 6 — Tests Verify Intent",
+    "Rule 7 — Checkpoint After Every Significant Step",
+    "Rule 8 — Fail Loud",
+    "Rule 9 — Agent Scope Declaration",
+}
 
 SCRIPT_REF_RE = re.compile(
     r"(?:\b(?:python3|python|bash|sh)\s+(?:hplan/)?|[`'\"(])"
@@ -96,6 +128,81 @@ def check_skill_references(
         errors.append(f"Unregistered skill reference in {rel_path}: ${name}")
 
 
+def load_json(path: pathlib.Path, errors: list[str]) -> dict | None:
+    try:
+        value = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        errors.append(f"Malformed core adapter file {path}: {exc}")
+        return None
+    if not isinstance(value, dict):
+        errors.append(f"Malformed core adapter file {path}: expected object")
+        return None
+    return value
+
+
+def check_core_adapter_contract(repo_root: pathlib.Path, errors: list[str]) -> str | None:
+    if not (repo_root / "AGENTS.md").exists():
+        return None
+
+    paths = {name: repo_root / relative for name, relative in CORE_ADAPTER_FILES.items()}
+    missing = [str(CORE_ADAPTER_FILES[name]) for name, path in paths.items() if not path.is_file()]
+    if missing:
+        errors.append("Missing core adapter files: " + ", ".join(missing))
+        return None
+
+    lock = load_json(paths["lock"], errors)
+    matrix = load_json(paths["matrix"], errors)
+    adapter = load_json(paths["adapter"], errors)
+    if lock is None or matrix is None or adapter is None:
+        return None
+
+    if lock.get("target") != "codex" or matrix.get("target") != "codex" or adapter.get("target") != "codex":
+        errors.append("Core adapter target must be codex in lock, matrix, and adapter metadata")
+    if not re.fullmatch(r"[0-9a-f]{64}", str(lock.get("source_sha256", ""))):
+        errors.append("Core adapter lock must contain a SHA-256 source digest")
+
+    capabilities = matrix.get("capabilities")
+    if not isinstance(capabilities, list) or len(capabilities) != 34:
+        errors.append("Core capability matrix must contain exactly 34 canonical capabilities")
+    else:
+        capability_ids = [item.get("capability_id") for item in capabilities if isinstance(item, dict)]
+        states = [item.get("support_state") for item in capabilities if isinstance(item, dict)]
+        if len(capability_ids) != 34 or len(set(capability_ids)) != 34:
+            errors.append("Core capability matrix must use 34 unique capability IDs")
+        if any(item.get("canonical_owner") != "hplan-core" for item in capabilities if isinstance(item, dict)):
+            errors.append("Core capability matrix must preserve hplan-core ownership")
+        if any(state not in {"native", "adapter-required", "unavailable"} for state in states):
+            errors.append("Core capability matrix contains an invalid support state")
+        if not any(state != "native" for state in states):
+            errors.append("Core capability matrix must expose non-native support states")
+
+    rules = matrix.get("rules")
+    rule_ids = {item.get("rule_id") for item in rules if isinstance(item, dict)} if isinstance(rules, list) else set()
+    if not isinstance(rules, list) or len(rules) != 9 or rule_ids != CORE_RULE_IDS:
+        errors.append("Core capability matrix must preserve the 9 Behavioral Rules")
+
+    aliases = matrix.get("aliases")
+    alias_map = {item.get("alias_id"): item.get("target") for item in aliases if isinstance(item, dict)} if isinstance(aliases, list) else {}
+    if not isinstance(aliases, list) or len(aliases) != 3 or alias_map != CORE_ALIASES:
+        errors.append("Core capability matrix must preserve the 3 compatibility aliases")
+
+    if adapter.get("adapter_status") != "adapter-required":
+        errors.append("Adapter metadata must declare adapter-required status")
+    if adapter.get("external_connector_boundary") != "draft-only" or adapter.get("external_connector_writes") != "disabled":
+        errors.append("Adapter metadata must keep external connector writes disabled and draft-only")
+
+    agents = (repo_root / "AGENTS.md").read_text(encoding="utf-8")
+    if "## 9 Behavioral Rules" not in agents or not all(f"### {heading}" in agents for heading in CORE_RULE_HEADINGS):
+        errors.append("AGENTS.md must declare all 9 Behavioral Rules")
+    for route in ("roadmap → prd --mode roadmap", "router → orchestration --pattern router", "stakeholder-update → ops-review"):
+        if route not in agents:
+            errors.append(f"AGENTS.md must declare compatibility alias: {route}")
+
+    if errors:
+        return None
+    return "HPLAN core adapter contract valid: 34 capabilities, 9 rules, 3 aliases."
+
+
 def validate(root: pathlib.Path) -> tuple[int, list[str]]:
     repo_root = root.resolve()
     skills_dir = repo_root / "skills"
@@ -172,6 +279,7 @@ def validate(root: pathlib.Path) -> tuple[int, list[str]]:
 def main() -> None:
     args = parse_args()
     skill_count, errors = validate(args.root)
+    core_adapter_summary = check_core_adapter_contract(args.root.resolve(), errors)
 
     print(f"Skills found: {skill_count}")
     if errors:
@@ -179,6 +287,8 @@ def main() -> None:
         for error in errors:
             print(f"  x {error}")
         sys.exit(1)
+    if core_adapter_summary:
+        print(core_adapter_summary)
     print(f"All {skill_count} skills valid. No forbidden references found.")
 
 

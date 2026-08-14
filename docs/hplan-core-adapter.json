@@ -1,0 +1,10 @@
+{
+  "contract_version": "1.0.0",
+  "target": "codex",
+  "adapter_status": "adapter-required",
+  "capability_status_source": "docs/hplan-capability-matrix.json",
+  "native_execution_policy": "matrix-native-only",
+  "non_native_fallback": "local-or-draft-only",
+  "external_connector_boundary": "draft-only",
+  "external_connector_writes": "disabled"
+}
