@@ -83,10 +83,10 @@ class HplanCoreAdapterTests(unittest.TestCase):
 
     def test_snapshot_files_match_current_core_renderer_byte_for_byte(self):
         targets = {
-            "hplan-core.lock": ROOT / "hplan-core.lock",
-            "hplan-capability-matrix.json": ROOT / "docs" / "hplan-capability-matrix.json",
-            "HPLAN_CAPABILITY_MATRIX.md": ROOT / "docs" / "HPLAN_CAPABILITY_MATRIX.md",
-            "hplan-core-adapter.json": ROOT / "docs" / "hplan-core-adapter.json",
+            "hplan-core.lock": ROOT / "runtime" / "hplan-core" / "hplan-core.lock",
+            "hplan-capability-matrix.json": ROOT / "runtime" / "hplan-core" / "hplan-capability-matrix.json",
+            "HPLAN_CAPABILITY_MATRIX.md": ROOT / "runtime" / "hplan-core" / "HPLAN_CAPABILITY_MATRIX.md",
+            "hplan-core-adapter.json": ROOT / "runtime" / "hplan-core" / "hplan-core-adapter.json",
         }
         with tempfile.TemporaryDirectory() as tmp:
             result = self.render_core_snapshot(Path(tmp))
@@ -99,9 +99,9 @@ class HplanCoreAdapterTests(unittest.TestCase):
                 )
 
     def test_codex_snapshot_preserves_core_contract_and_truthful_boundaries(self):
-        lock_path = ROOT / "hplan-core.lock"
-        matrix_path = ROOT / "docs" / "hplan-capability-matrix.json"
-        adapter_path = ROOT / "docs" / "hplan-core-adapter.json"
+        lock_path = ROOT / "runtime" / "hplan-core" / "hplan-core.lock"
+        matrix_path = ROOT / "runtime" / "hplan-core" / "hplan-capability-matrix.json"
+        adapter_path = ROOT / "runtime" / "hplan-core" / "hplan-core-adapter.json"
         self.assertTrue(lock_path.is_file(), "missing hplan-core.lock")
         self.assertTrue(matrix_path.is_file(), "missing Codex capability matrix")
         self.assertTrue(adapter_path.is_file(), "missing adapter status metadata")

@@ -18,7 +18,7 @@ metadata:
 
 ## Unified PRD Template — 15 Sections
 
-Canonical section numbering is defined in `docs/PRD_SECTION_MAP.md`. In short: §1 ICP, §7 Agent Role, §11 Output Specification, §12 Metrics, §14 Failure/HITL, §15 QA Pool.
+Canonical section numbering: §1 ICP, §7 Agent Role, §11 Output Specification, §12 Metrics, §14 Failure/HITL, §15 QA Pool.
 
 ## Core Goal
 

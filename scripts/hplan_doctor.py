@@ -95,10 +95,10 @@ def load_json(path: Path) -> tuple[dict | None, str | None]:
 def snapshot_problem(root: Path, artifact_root: Path | None = None) -> tuple[str | None, str | None]:
     artifact_root = artifact_root or root
     paths = {
-        "lock": artifact_root / "hplan-core.lock",
-        "matrix": artifact_root / "docs" / "hplan-capability-matrix.json",
-        "markdown": artifact_root / "docs" / "HPLAN_CAPABILITY_MATRIX.md",
-        "adapter": artifact_root / "docs" / "hplan-core-adapter.json",
+        "lock": artifact_root / "runtime" / "hplan-core" / "hplan-core.lock",
+        "matrix": artifact_root / "runtime" / "hplan-core" / "hplan-capability-matrix.json",
+        "markdown": artifact_root / "runtime" / "hplan-core" / "HPLAN_CAPABILITY_MATRIX.md",
+        "adapter": artifact_root / "runtime" / "hplan-core" / "hplan-core-adapter.json",
     }
     try:
         missing = [str(path.relative_to(root)) for path in paths.values() if not path.is_file()]
@@ -109,7 +109,7 @@ def snapshot_problem(root: Path, artifact_root: Path | None = None) -> tuple[str
 
     lock, error = load_json(paths["lock"])
     if error:
-        return "teacher", f"hplan-core.lock을 읽을 수 없습니다: {error}"
+        return "teacher", f"runtime hplan-core lock을 읽을 수 없습니다: {error}"
     matrix, error = load_json(paths["matrix"])
     if error:
         return "teacher", f"capability matrix를 읽을 수 없습니다: {error}"
@@ -120,13 +120,13 @@ def snapshot_problem(root: Path, artifact_root: Path | None = None) -> tuple[str
     if lock.get("target") != "codex" or matrix.get("target") != "codex" or adapter.get("target") != "codex":
         return "teacher", "스냅샷 target이 codex와 일치하지 않습니다"
     if lock.get("files") != EXPECTED_FILES:
-        return "teacher", "hplan-core.lock의 artifact 목록이 일치하지 않습니다"
+        return "teacher", "runtime hplan-core lock의 artifact 목록이 일치하지 않습니다"
     digest = lock.get("source_sha256")
     if not isinstance(digest, str) or not re.fullmatch(r"[0-9a-f]{64}", digest):
-        return "teacher", "hplan-core.lock의 source digest가 유효하지 않습니다"
+        return "teacher", "runtime hplan-core lock의 source digest가 유효하지 않습니다"
     core_digest = lock.get("core_source_sha256")
     if not isinstance(core_digest, str) or not re.fullmatch(r"[0-9a-f]{64}", core_digest):
-        return "teacher", "hplan-core.lock의 core source digest가 유효하지 않습니다"
+        return "teacher", "runtime hplan-core lock의 core source digest가 유효하지 않습니다"
     if matrix.get("contract_version") != lock.get("contract_version") or adapter.get("core_version") != lock.get("contract_version"):
         return "teacher", "contract version이 lock, matrix, adapter 사이에 일치하지 않습니다"
     if adapter.get("core_source_sha256") != core_digest:

@@ -45,6 +45,10 @@ jobs:
           test -f "$tmpdir/scripts/validate-mermaid.py"
           test -f "$tmpdir/scripts/validate_agents.py"
           test -f "$tmpdir/scripts/track-probe.sh"
+          test -f "$tmpdir/runtime/hplan-core/hplan-core.lock"
+          test -f "$tmpdir/runtime/hplan-core/hplan-capability-matrix.json"
+          test -f "$tmpdir/runtime/hplan-core/HPLAN_CAPABILITY_MATRIX.md"
+          test -f "$tmpdir/runtime/hplan-core/hplan-core-adapter.json"
 
       - name: Smoke test track probe
         run: |

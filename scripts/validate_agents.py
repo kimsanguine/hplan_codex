@@ -2,6 +2,7 @@
 """validate_agents.py — hplan_codex skill validator (Codex layout)"""
 import argparse
 import json
+import os
 import pathlib
 import re
 import sys
@@ -15,9 +16,9 @@ ALLOWED_REFERENCE_STATUSES = {
     "external",
 }
 CORE_ADAPTER_FILES = {
-    "lock": pathlib.Path("hplan-core.lock"),
-    "matrix": pathlib.Path("docs/hplan-capability-matrix.json"),
-    "adapter": pathlib.Path("docs/hplan-core-adapter.json"),
+    "lock": pathlib.Path("runtime/hplan-core/hplan-core.lock"),
+    "matrix": pathlib.Path("runtime/hplan-core/hplan-capability-matrix.json"),
+    "adapter": pathlib.Path("runtime/hplan-core/hplan-core-adapter.json"),
 }
 CORE_RULE_IDS = {
     "think-before-coding",
@@ -223,6 +224,16 @@ def validate(root: pathlib.Path) -> tuple[int, list[str]]:
     skills_dir = repo_root / "skills"
     errors: list[str] = []
     skill_count = 0
+
+    for current_root, directory_names, _ in os.walk(repo_root):
+        directory_names[:] = [name for name in directory_names if name != ".git"]
+        current_path = pathlib.Path(current_root)
+        for forbidden_dir in ("docs", ".archive"):
+            if forbidden_dir in directory_names:
+                path = current_path / forbidden_dir
+                errors.append(
+                    f"Public policy forbids tracked directory: {path.relative_to(repo_root)}"
+                )
 
     if not skills_dir.exists():
         errors.append(f"Missing skills directory: {skills_dir}")

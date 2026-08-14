@@ -110,6 +110,30 @@ class ValidateAgentsTests(unittest.TestCase):
             self.assertIn("docs/BAD.md", result.stdout)
             self.assertIn("scripts/not_real.py", result.stdout)
 
+    def test_public_docs_or_archive_directory_is_rejected(self):
+        """A passing validator must enforce the no-public-docs policy."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self.write_skill(root, "demo", "demo")
+            (root / "docs").mkdir()
+
+            result = self.run_validator(root)
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("Public policy forbids tracked directory: docs", result.stdout)
+
+    def test_nested_public_docs_or_archive_directory_is_rejected(self):
+        """Hidden installer backups cannot bypass the public directory policy."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self.write_skill(root, "demo", "demo")
+            (root / ".snapshot" / "docs").mkdir(parents=True)
+
+            result = self.run_validator(root)
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("Public policy forbids tracked directory: .snapshot/docs", result.stdout)
+
     def test_available_skill_reference_passes_without_registry(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

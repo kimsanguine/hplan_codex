@@ -14,10 +14,10 @@ from hplan_doctor import BACKUP_DIR, snapshot_problem
 
 
 ARTIFACTS = (
-    Path("hplan-core.lock"),
-    Path("docs/hplan-capability-matrix.json"),
-    Path("docs/HPLAN_CAPABILITY_MATRIX.md"),
-    Path("docs/hplan-core-adapter.json"),
+    Path("runtime/hplan-core/hplan-core.lock"),
+    Path("runtime/hplan-core/hplan-capability-matrix.json"),
+    Path("runtime/hplan-core/HPLAN_CAPABILITY_MATRIX.md"),
+    Path("runtime/hplan-core/hplan-core-adapter.json"),
 )
 
 

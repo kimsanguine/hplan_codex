@@ -8,6 +8,10 @@ harness/decision-log.jsonl
 harness/build-gate/
 .track/
 
+# Private material must never enter the public repository.
+/docs/
+/.archive/
+
 # Python
 __pycache__/
 *.pyc
